@@ -1,0 +1,39 @@
+# Single source of truth for dependency versions.
+# Most test/runtime libraries are version-managed by the Spring Boot BOM
+# (imported as a platform in the spring-conventions plugin) and therefore
+# appear here WITHOUT a version. Only things the BOM does not manage are pinned.
+
+[versions]
+kotlin = "2.4.0"
+springBoot = "3.5.15"
+mockk = "1.14.11"
+
+[libraries]
+# --- Gradle plugin artifacts consumed by build-logic (precompiled convention plugins) ---
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-allopen     = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }   # plugin.spring
+kotlin-noarg       = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }     # plugin.jpa
+
+# --- BOM (platform) ---
+spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+
+# --- Production (versions from BOM) ---
+spring-boot-starter          = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-amqp     = { module = "org.springframework.boot:spring-boot-starter-amqp" }
+postgresql                   = { module = "org.postgresql:postgresql" }
+
+# --- Test (versions from BOM, except mockk) ---
+spring-boot-starter-test  = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+testcontainers-junit      = { module = "org.testcontainers:junit-jupiter" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+testcontainers-rabbitmq   = { module = "org.testcontainers:rabbitmq" }
+awaitility                = { module = "org.awaitility:awaitility" }
+junit-platform-launcher   = { module = "org.junit.platform:junit-platform-launcher" }
+mockk                     = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+[plugins]
+kotlin-jvm    = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-jpa    = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }

@@ -1,0 +1,28 @@
+# --- Solutions are private: never committed -----------------------------------
+/solutions/
+
+# --- Gradle -------------------------------------------------------------------
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+build-logic/.gradle/
+
+# --- IDE ----------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+out/
+
+# --- OS -----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# --- Logs / tmp ---------------------------------------------------------------
+*.log
+*.hprof
+
+# --- Claude Code runtime state ------------------------------------------------
+.claude/scheduled_tasks.lock
+.claude/*.lock
