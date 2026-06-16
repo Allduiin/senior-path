@@ -7,8 +7,8 @@
 - **Start:** 2026-06-14
 - **Target:** Senior Java/Kotlin Backend Engineer
 - **Horizon:** ~18 mo (front-loaded) — adjust to actual hours
-- **Hours/week:** _<fill>_
-- **Title / experience:** _<fill — affects horizon>_
+- **Hours/week:** 6–10 (roadmap baseline; ~18-mo horizon holds)
+- **Title / experience:** Mid-level backend, 3–5 yrs (payments/fintech; Sofia)
 - **Current overall level:** L3 (competent mid) — **confidence: LOW** (only baseline taken)
 - **Last assessment:** 2026-06-14 (baseline) · **Next due:** 2026-06-28
 
@@ -40,7 +40,7 @@ Full per-cell detail lives in `knowledge-map.md`. Baseline (2026-06-14), scores 
 
 | Q | Topic | Score |
 |---|---|:--:|
-| Q1 | Tx propagation / proxy self-invocation | 40 |
+| Q1 | Tx propagation / proxy self-invocation | 40 → 70 |
 | Q2 | Isolation levels & MVCC | 35 |
 | Q3 | N+1 / fetch strategies | 55 |
 | Q4 | Coroutine scopes & cancellation | 10 |
@@ -60,11 +60,13 @@ Baseline mean ≈ 28.
 |---|---|---|
 | 2026-06-14 | Lab bootstrapped; Phase 1 opened | repo scaffold, `CLAUDE.md`, exercise index |
 | 2026-06-14 | Exercise `p1-01` created (RED by design) — targets Q1 | `exercises/p1-01-tx-self-invocation/` |
+| 2026-06-16 | Solved `p1-01` (Q1) via separate-bean; test GREEN | `exercises/p1-01-tx-self-invocation/` |
+| 2026-06-16 | Knowledge base started (hub + Q1 proxy/tx note) | `docs/knowledge-base/` |
 
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
 |---|:--:|:--:|---|---|
-| p1-01-tx-self-invocation | 1 | Q1 | issued (RED) | tests failing by design — awaiting fix |
+| p1-01-tx-self-invocation | 1 | Q1 | GREEN | solved via separate-bean (approach a); `payments=1, audits=0`. Stretch goals + cold re-test pending → then REVIEWED |
 
 ## Open weak spots (priority top-down)
 1. Transactional outbox — pattern not known (Q6).
@@ -72,13 +74,16 @@ Baseline mean ≈ 28.
 3. Idempotent consumption: key + dedup store + failure window (Q7).
 4. Coroutines: `coroutineScope` vs `supervisorScope`, cancellation (Q4).
 5. Virtual threads: pinning, CPU-bound (Q5).
-6. Spring proxy self-invocation (Q1). — **active: p1-01**
+6. Spring proxy self-invocation (Q1). — **p1-01 GREEN (40→70); cold re-test of propagation + proxy-types owed before "closed"; `UnexpectedRollbackException` stretch not yet done.**
 7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2).
 8. Bulkhead = resource isolation; circuit breaker auto-recovery (Q10).
 9. Tail-latency diagnosis p99/p50 (Q11).
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
-Phase 1, Q1: complete `p1-01-tx-self-invocation` (make the RED test pass via a correct
-proxy-respecting approach; articulate the tradeoffs of separate-bean vs self-injection vs
-`AopContext`). Then move to Q2 (isolation & MVCC).
+Q1 solidify, then Q2. Concretely:
+1. p1-01 **stretch goal 1**: switch the audit method to `REQUIRED` (proxied) and confirm the
+   payment is now lost via `UnexpectedRollbackException` — burns in the REQUIRED-vs-REQUIRES_NEW
+   trap. Then optionally stretch 2 (prove two physical transactions).
+2. Cold re-test Q1 (proxy types JDK/CGLIB; all-7 propagation) to push 70→80+ and mark REVIEWED.
+3. Begin Q2 — isolation levels & MVCC (next Phase-1 cell): create `p1-02`.
