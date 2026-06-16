@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class PaymentLedgerService(
     private val payments: PaymentRepository,
-    private val audits: AuditRepository,
+    private val auditService: AuditService,
 ) {
 
     @Transactional
@@ -50,21 +50,11 @@ class PaymentLedgerService(
         try {
             // BUG: self-invocation through `this` — the REQUIRES_NEW proxy advice is bypassed.
             // TODO(task 2): route this call through the proxy so a NEW transaction is started.
-            recordAuditAttempt(reference)
+            auditService.recordAuditAttempt(reference)
         } catch (ex: AuditSinkUnavailableException) {
             // Audit is best-effort: we deliberately swallow the failure and let the payment commit.
             // (Correct behaviour: only the audit's OWN transaction should have rolled back.)
         }
-    }
-
-    /**
-     * Intended to run in its own transaction so this write rolls back independently when it
-     * throws. The annotation is correct; the CALL PATH in [processPayment] is what defeats it.
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    fun recordAuditAttempt(reference: String) {
-        audits.save(AuditEntity(reference = reference))
-        throw AuditSinkUnavailableException("audit sink unavailable for reference=$reference")
     }
 }
 
