@@ -67,15 +67,14 @@ propose today's focus, then teach/quiz or design/check exercises.
 
 ## SPACED REVIEW (retention)
 A separate, lightweight layer from the 2–4 week deep re-assessment. Source of truth:
-`docs/spaced-review.md`.
-- A theme enters the ledger at **Box 1** once taught **and** it has a knowledge-base note.
-- Boxes set expanding review intervals: 7 / 14 / 30 / 60 / 120 / 240 days.
-- On review (say **"review"**, or surfaced at session start when `next_due ≤ today`): ask 3–5
-  cold recall questions per due theme, grade with the rubric, then move the box —
-  **≥80 promote · 50–79 stay · <80→<50 lapse to Box 1** — and recompute `next_due`. Record in
-  the ledger's review log; lapses also go to `progress-log.md` weak spots.
-- Optionally a scheduled agent (via the `schedule` skill) pings on a cadence; record its id in
-  the ledger's Automation section.
+`docs/spaced-review.md`; the procedure is the **`/weekly-test`** skill.
+- A theme enters the ledger (EF 2.50, reps 0) once taught **and** it has a knowledge-base note.
+- Scheduling uses **SM-2** (Ebbinghaus-based): per-item ease factor multiplies the interval on
+  each cold pass, so intervals expand (7 d → ~18 d → ~45 d → months); a failed recall lapses to
+  ~2 days. Full formula in `docs/spaced-review.md`.
+- At session start, if any theme is due (`next_due ≤ today`), announce it and offer `/weekly-test`.
+  Running it quizzes due themes cold, grades, applies SM-2, updates the ledger, logs lapses to
+  weak spots, and commits.
 
 ## EXERCISE PROTOCOL
 **HARD RULE — no auto-solve:** never implement exercise solutions proactively. Exercises are

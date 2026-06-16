@@ -1,57 +1,76 @@
-# Spaced Review — retention ledger
+# Spaced Review — retention ledger (SM-2)
 
-> Lightweight, frequent recall to beat the forgetting curve. **Distinct from**
+> Lightweight, frequent recall to beat the **Ebbinghaus forgetting curve**. **Distinct from**
 > `knowledge-map.md` (deep re-assessment every 2–4 weeks): this is short, per-theme, and
-> scheduled by expanding intervals. The mentor owns and updates this file.
+> scheduled by the **SM-2** algorithm. The mentor owns and updates this file.
+> Run it with the **`/weekly-test`** skill (or just say "review").
 
-## How it works (Leitner / expanding intervals)
-A theme enters the ledger once it has been **taught and has a knowledge-base note**. Each
-theme sits in a **box**; the box sets how long until its next review:
+## The algorithm (SM-2, concept-tuned)
+Each theme carries three SM-2 fields:
+- **EF** — *ease factor* (how "easy" the item is). Starts **2.50**, floor **1.30**.
+- **reps** — count of consecutive successful recalls.
+- **interval** — days until the next review.
 
-| Box | Interval to next review |
-|:--:|---|
-| 1 (new / lapsed) | 7 days |
-| 2 | 14 days |
-| 3 | 30 days |
-| 4 | 60 days |
-| 5 | 120 days |
-| 6 (mature) | 240 days |
+After each review, grade the cold recall **0–100** (rubric below), map it to an SM-2 **quality
+`q` (0–5)**, then update:
 
-**On a review** (3–5 quick recall questions per due theme, answered cold), grade with the
-`knowledge-map.md` rubric (0–100) and move the box:
+**1. Map grade → q**
+| Grade | q | Meaning |
+|---|:--:|---|
+| 95–100 | 5 | perfect, instant, cold |
+| 80–94 | 4 | correct, minor hesitation |
+| 70–79 | 3 | correct but effortful (pass floor) |
+| 55–69 | 2 | familiar but wrong |
+| 30–54 | 1 | barely |
+| 0–29 | 0 | blank |
 
-- **Recall cold (≥ 80)** → **promote**: `box = min(box+1, 6)`; `next_due = review_date + new interval`.
-- **Shaky (50–79)** → **stay**: same box; `next_due = review_date + same interval`.
-- **Forgot (< 50)** → **lapse**: `box = 1`; `next_due = review_date + 7d`; add to `progress-log.md` weak spots.
+**2. Update EF (always):**
+`EF' = EF + (0.1 − (5 − q) × (0.08 + (5 − q) × 0.02))`, then clamp to ≥ 1.30.
 
-A theme is "**retained**" once it reaches **Box 5+**.
+**3. Update interval & reps:**
+- **Pass (`q ≥ 3`)** — promote:
+  - `reps == 0` → `interval = 7`
+  - `reps == 1` → `interval = round(7 × EF')`  (≈ 18 d at EF 2.5)
+  - `reps ≥ 2` → `interval = round(interval_prev × EF')`
+  - then `reps += 1`
+- **Fail (`q < 3`)** — lapse: `reps = 0`, `interval = 2` (relearn next session-ish), and add/raise
+  the theme in `progress-log.md` "Open weak spots". EF still takes the downward step above.
+- `next_due = review_date + interval`
+
+So a theme you keep recalling cold marches **7 d → ~18 d → ~45 d → ~3.5 mo → ~9 mo …** (faster
+if EF rises toward 2.6–2.7, slower if it sinks). You will **not** re-answer the same question
+every few days unless you actually forget it.
+
+> Tuning note: canonical SM-2 uses first intervals of 1 d then 6 d. We start at **7 d** (then
+> `7 × EF`) because this is conceptual material reviewed at ~6–10 h/week, not flashcard
+> vocabulary. The EF mechanics — the real science lever — are unchanged.
+
+## Grading rubric (shared with knowledge-map)
+0 = none · 40 = correct instinct, no mechanism · 70 = mechanism + one tradeoff · 90+ = cold with tradeoffs.
 
 ## Triggers
-- **Every session start**, the mentor scans this ledger and surfaces any theme with
-  `next_due ≤ today` ("N reviews due / overdue").
-- Say **"review"** (or "run review") any time to quiz all due themes now.
-- Optionally, a scheduled agent pings on a cadence (see `## Automation` below) so reviews
-  reach you without asking.
+- **Every session start** the mentor scans this ledger; if any `next_due ≤ today`, it announces
+  what's due and offers to run `/weekly-test`.
+- Run **`/weekly-test`** (or say "review") any time to quiz all due themes now.
 
 ## Ledger
-Today's reference date for seeding: **2026-06-16**.
+Reference date for seeding: **2026-06-16**.
 
-| Theme | Q | KB note | Box | Last reviewed | Next due | History |
-|---|:--:|---|:--:|:--:|:--:|---|
-| Spring proxy AOP & `@Transactional` propagation | Q1 | [link](knowledge-base/phase-1-distributed-tx/spring-proxy-and-transactions.md) | 1 | 2026-06-16 (closed @80) | **2026-06-23** | 2026-06-16 learned+closed (cold @80) → Box 1 |
+| Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
+|---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
+| Spring proxy AOP & `@Transactional` propagation | Q1 | [link](knowledge-base/phase-1-distributed-tx/spring-proxy-and-transactions.md) | 2.50 | 1 | 7 | 2026-06-16 | **2026-06-23** | 2026-06-16 closed cold @80 (q4) → EF 2.50, reps 1, +7d |
 
-> Add a row when a new theme gets a KB note. When Phase-2+ themes are taught they land here at Box 1.
+> Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
+> first successful review).
 
 ## Automation
-**Chosen: session-start surfacing only** (2026-06-16). No scheduled cloud agent — reviews are
-surfaced by the mentor every time a session opens here (`next_due ≤ today`), plus on-demand via
-"review". This is fully reliable and needs no infra; the trade-off is it only fires when you
-start a session, so open one at least every few days to stay on the curve.
-
-_If you later want a proactive ping:_ preferred cadence is **every 3 days**, silent unless
-something is due. Set it up via the `schedule` skill and record the routine id here.
+**Chosen: session-start surfacing only** (2026-06-16). No scheduled cloud agent — due themes are
+surfaced when a session opens here, plus on-demand via `/weekly-test`. Reliable, no infra; the
+trade-off is it fires only when you start a session, so open one every several days to stay on
+the curve. _If a proactive ping is wanted later:_ preferred cadence **every 3 days**, silent
+unless something is due — set up via the `schedule` skill and record the routine id here.
 
 ## Review log
-| Date | Themes reviewed | Outcome |
-|---|---|---|
-| _none yet_ | | |
+| Date | Themes reviewed | Grade → q | EF/interval change |
+|---|---|---|---|
+| _none yet_ | | | |
