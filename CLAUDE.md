@@ -80,22 +80,22 @@ A separate, lightweight layer from the 2–4 week deep re-assessment. Source of 
 **HARD RULE — no auto-solve:** never implement exercise solutions proactively. Exercises are
 CHALLENGES: spec + skeleton with TODOs + FAILING tests only. Solutions go in `/solutions`
 (gitignored) ONLY when I explicitly say **"show me the solution,"** and even then give hints
-first.
+first. This rule is a global invariant and lives here, not in the skill.
 
-When I say **"create the next exercise"** (optionally naming a phase/topic):
-- **a.** Pick the topic from `docs/roadmap.md` and the open gaps in `docs/progress-log.md`.
-  Default to the current phase.
-- **b.** Create `exercises/p{phase}-{NN}-{slug}/` with:
-  - `SPEC.md`: objective; roadmap phase; targeted diagnostic Q(s); scenario; numbered tasks
-    (TODOs); acceptance criteria; constraints; 2 stretch goals.
-  - A minimal Spring/Gradle module (skeleton with `// TODO` markers).
-  - FAILING tests (Testcontainers where relevant) that pass only when I implement it.
-- **c.** Register the module in `settings.gradle.kts`.
-- **d.** Run the build: confirm it **COMPILES** and the new tests **FAIL by design** (red start).
-- **e.** Append a row to the exercise index below and reflect it in `docs/progress-log.md`.
-- **f.** Print how to run that exercise's tests and what "done" looks like.
+The procedure for **"create the next exercise"** (optionally naming a phase/topic) is the
+**`/next-exercise`** skill: pick the topic from `docs/roadmap.md` + open gaps → scaffold from
+`exercises/_TEMPLATE/` (SPEC + skeleton with `// TODO`s + FAILING Testcontainers tests) →
+register in `settings.gradle.kts` → verify it COMPILES and is **RED by design** (assertion
+failure, not a compile/infra error) → update the index below **and** `docs/progress-log.md` →
+print the run command and what "done" looks like. Never ship the fix.
 
-Use the `exercises/_TEMPLATE/` folder as the starting point.
+## RE-ASSESSMENT
+Two cadences, two skills:
+- **`/repeat-knowledge`** — lightweight per-theme retention (SM-2); see SPACED REVIEW above.
+- **`/assess`** — deep re-assessment every **2–4 weeks** (or on demand / when `progress-log.md`
+  "Next due" ≤ today): retest fragile cells, deep-check recently-closed ones, probe untested
+  areas for new blind spots, recompute pillar levels, update `knowledge-map.md` +
+  `progress-log.md`, and reset Last/Next assessment dates.
 
 ---
 
