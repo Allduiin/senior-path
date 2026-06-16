@@ -32,3 +32,4 @@ Baseline mean ≈ 28.
 |---|---|---|---|
 | 2026-06-14 | Baseline diagnostic | Q1–Q12 | Initial calibration. |
 | 2026-06-16 | Q1 teach + p1-01 solved (separate-bean) | Q1 | Bypass intuition correct cold; proxy-types (JDK/CGLIB + Kotlin all-open) and full 7-propagation set taught; fix implemented, test GREEN. 40→70. Not closed: cold re-test of propagation/proxy-types still owed. |
+| 2026-06-16 | Cold re-test Q1 (6 Qs) | Q1 | Strong: bypass (85), 7-propagation breadth + MANDATORY/NEVER/NOT_SUPPORTED (85), tradeoffs (75), rollback rule (75). **Weak: REQUIRED trap (15) — answered with the REQUIRES_NEW outcome despite just seeing `UnexpectedRollbackException`; proxy-types Kotlin half skipped (50).** Holds at 70 — NOT closed. Re-test the REQUIRED-vs-REQUIRES_NEW distinction next session. |

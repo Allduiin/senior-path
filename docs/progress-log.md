@@ -66,7 +66,7 @@ Baseline mean ≈ 28.
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
 |---|:--:|:--:|---|---|
-| p1-01-tx-self-invocation | 1 | Q1 | GREEN | solved via separate-bean (approach a); `payments=1, audits=0`. Stretch goals + cold re-test pending → then REVIEWED |
+| p1-01-tx-self-invocation | 1 | Q1 | GREEN | solved via separate-bean (approach a); `payments=1, audits=0`. **Stretch 1 done + verified**: REQUIRED → `UnexpectedRollbackException` (rollback-only), payment lost. Cold re-test pending → then REVIEWED |
 
 ## Open weak spots (priority top-down)
 1. Transactional outbox — pattern not known (Q6).
@@ -81,9 +81,8 @@ Baseline mean ≈ 28.
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
-Q1 solidify, then Q2. Concretely:
-1. p1-01 **stretch goal 1**: switch the audit method to `REQUIRED` (proxied) and confirm the
-   payment is now lost via `UnexpectedRollbackException` — burns in the REQUIRED-vs-REQUIRES_NEW
-   trap. Then optionally stretch 2 (prove two physical transactions).
-2. Cold re-test Q1 (proxy types JDK/CGLIB; all-7 propagation) to push 70→80+ and mark REVIEWED.
-3. Begin Q2 — isolation levels & MVCC (next Phase-1 cell): create `p1-02`.
+1. **Re-test the REQUIRED-vs-REQUIRES_NEW distinction cold** — the one Q1 miss (answered the
+   REQUIRES_NEW outcome for a REQUIRED scenario). One transaction vs two; rollback-only +
+   `UnexpectedRollbackException`. When this is answered cold, Q1 → 80+ and CLOSED.
+   (Also tighten proxy-types Kotlin half: CGLIB-default, final-by-default, all-open plugin.)
+2. Begin **Q2 — isolation levels & MVCC** (next Phase-1 cell): create `p1-02`.
