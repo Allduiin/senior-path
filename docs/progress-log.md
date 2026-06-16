@@ -40,7 +40,7 @@ Full per-cell detail lives in `knowledge-map.md`. Baseline (2026-06-14), scores 
 
 | Q | Topic | Score |
 |---|---|:--:|
-| Q1 | Tx propagation / proxy self-invocation | 40 → 70 |
+| Q1 | Tx propagation / proxy self-invocation | 40 → 80 |
 | Q2 | Isolation levels & MVCC | 35 |
 | Q3 | N+1 / fetch strategies | 55 |
 | Q4 | Coroutine scopes & cancellation | 10 |
@@ -66,7 +66,7 @@ Baseline mean ≈ 28.
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
 |---|:--:|:--:|---|---|
-| p1-01-tx-self-invocation | 1 | Q1 | GREEN | solved via separate-bean (approach a); `payments=1, audits=0`. **Stretch 1 done + verified**: REQUIRED → `UnexpectedRollbackException` (rollback-only), payment lost. Cold re-test pending → then REVIEWED |
+| p1-01-tx-self-invocation | 1 | Q1 | REVIEWED | solved via separate-bean; `payments=1, audits=0`. Stretch 1 verified (REQUIRED → `UnexpectedRollbackException`). Cold re-test passed → Q1 80 (provisionally closed) |
 
 ## Open weak spots (priority top-down)
 1. Transactional outbox — pattern not known (Q6).
@@ -81,8 +81,7 @@ Baseline mean ≈ 28.
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
-1. **Re-test the REQUIRED-vs-REQUIRES_NEW distinction cold** — the one Q1 miss (answered the
-   REQUIRES_NEW outcome for a REQUIRED scenario). One transaction vs two; rollback-only +
-   `UnexpectedRollbackException`. When this is answered cold, Q1 → 80+ and CLOSED.
-   (Also tighten proxy-types Kotlin half: CGLIB-default, final-by-default, all-open plugin.)
-2. Begin **Q2 — isolation levels & MVCC** (next Phase-1 cell): create `p1-02`.
+Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28 cycle (REQUIRED-vs-
+REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs per-call interceptor).
+Main work: begin **Q2 — isolation levels & MVCC** (next Phase-1 cell) — scaffold `p1-02`
+(Postgres snapshot isolation vs InnoDB REPEATABLE READ; optimistic vs pessimistic locking).
