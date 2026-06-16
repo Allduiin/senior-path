@@ -43,12 +43,13 @@ Today's reference date for seeding: **2026-06-16**.
 > Add a row when a new theme gets a KB note. When Phase-2+ themes are taught they land here at Box 1.
 
 ## Automation
-_Status: not yet scheduled._ Options for the proactive "ping":
-- **Session-start surfacing** (always on, no infra): the ritual above. Reliable but only fires
-  when you open a session.
-- **Scheduled agent** (optional): a routine that runs on a cadence (e.g. weekly), reads this
-  ledger, and quizzes any due theme. Configure via the `schedule` skill. Record the routine
-  id/cadence here once set up.
+**Chosen: session-start surfacing only** (2026-06-16). No scheduled cloud agent — reviews are
+surfaced by the mentor every time a session opens here (`next_due ≤ today`), plus on-demand via
+"review". This is fully reliable and needs no infra; the trade-off is it only fires when you
+start a session, so open one at least every few days to stay on the curve.
+
+_If you later want a proactive ping:_ preferred cadence is **every 3 days**, silent unless
+something is due. Set it up via the `schedule` skill and record the routine id here.
 
 ## Review log
 | Date | Themes reviewed | Outcome |
