@@ -67,7 +67,7 @@ propose today's focus, then teach/quiz or design/check exercises.
 
 ## SPACED REVIEW (retention)
 A separate, lightweight layer from the 2–4 week deep re-assessment. Source of truth:
-`docs/spaced-review.md`; the procedure is the **`/weekly-test`** skill.
+`docs/spaced-review.md`; the procedure is the **`/repeat-knowledge`** skill.
 - A theme enters the ledger (EF 2.50, reps 0) once taught **and** it has a knowledge-base note.
 - Scheduling uses **SM-2** (Ebbinghaus-based): per-item ease factor multiplies the interval on
   each cold pass, so intervals expand (7 d → ~18 d → ~45 d → months); a failed recall lapses to

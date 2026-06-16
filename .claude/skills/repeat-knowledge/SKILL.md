@@ -1,9 +1,9 @@
 ---
-name: weekly-test
-description: Run a spaced-repetition recall quiz for the senior-path learning lab. Use when the user types /weekly-test, says "review" / "weekly test" / "quiz me on what I've learned", or when the session-start ritual finds themes due in docs/spaced-review.md. Quizzes due themes cold, grades, and updates the retention ledger.
+name: repeat-knowledge
+description: Run a spaced-repetition recall quiz for the senior-path learning lab. Use when the user types /repeat-knowledge, says "review" / "repeat knowledge" / "quiz me on what I've learned", or when the session-start ritual finds themes due in docs/spaced-review.md. Quizzes due themes cold, grades, and updates the retention ledger.
 ---
 
-# /weekly-test — spaced-repetition review (SM-2)
+# /repeat-knowledge — spaced-repetition review (SM-2)
 
 Run a lightweight, cold recall quiz over the themes that are **due** in
 `docs/spaced-review.md`, then update the ledger using the **SM-2** algorithm. This is the
@@ -45,4 +45,4 @@ The full SM-2 spec (EF formula, grade→q map, interval rules) lives in `docs/sp
 - A theme enters the ledger (EF 2.50, reps 0) only once it has been taught **and** has a KB note.
 - Keep questions fresh across reviews (don't reuse the same 3 every time) — recall must be genuine.
 - Delivery is **session-start surfacing** (no scheduled agent) per the ledger's Automation
-  section: at session start, if anything is due, announce it and offer to run `/weekly-test`.
+  section: at session start, if anything is due, announce it and offer to run `/repeat-knowledge`.

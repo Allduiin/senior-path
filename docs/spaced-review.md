@@ -3,7 +3,7 @@
 > Lightweight, frequent recall to beat the **Ebbinghaus forgetting curve**. **Distinct from**
 > `knowledge-map.md` (deep re-assessment every 2–4 weeks): this is short, per-theme, and
 > scheduled by the **SM-2** algorithm. The mentor owns and updates this file.
-> Run it with the **`/weekly-test`** skill (or just say "review").
+> Run it with the **`/repeat-knowledge`** skill (or just say "review").
 
 ## The algorithm (SM-2, concept-tuned)
 Each theme carries three SM-2 fields:
@@ -50,8 +50,8 @@ every few days unless you actually forget it.
 
 ## Triggers
 - **Every session start** the mentor scans this ledger; if any `next_due ≤ today`, it announces
-  what's due and offers to run `/weekly-test`.
-- Run **`/weekly-test`** (or say "review") any time to quiz all due themes now.
+  what's due and offers to run `/repeat-knowledge`.
+- Run **`/repeat-knowledge`** (or say "review") any time to quiz all due themes now.
 
 ## Ledger
 Reference date for seeding: **2026-06-16**.
@@ -65,7 +65,7 @@ Reference date for seeding: **2026-06-16**.
 
 ## Automation
 **Chosen: session-start surfacing only** (2026-06-16). No scheduled cloud agent — due themes are
-surfaced when a session opens here, plus on-demand via `/weekly-test`. Reliable, no infra; the
+surfaced when a session opens here, plus on-demand via `/repeat-knowledge`. Reliable, no infra; the
 trade-off is it fires only when you start a session, so open one every several days to stay on
 the curve. _If a proactive ping is wanted later:_ preferred cadence **every 3 days**, silent
 unless something is due — set up via the `schedule` skill and record the routine id here.
