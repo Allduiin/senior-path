@@ -72,7 +72,7 @@ A separate, lightweight layer from the 2–4 week deep re-assessment. Source of 
 - Scheduling uses **SM-2** (Ebbinghaus-based): per-item ease factor multiplies the interval on
   each cold pass, so intervals expand (7 d → ~18 d → ~45 d → months); a failed recall lapses to
   ~2 days. Full formula in `docs/spaced-review.md`.
-- At session start, if any theme is due (`next_due ≤ today`), announce it and offer `/weekly-test`.
+- At session start, if any theme is due (`next_due ≤ today`), announce it and offer `/repeat-knowledge`.
   Running it quizzes due themes cold, grades, applies SM-2, updates the ledger, logs lapses to
   weak spots, and commits.
 
