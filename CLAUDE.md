@@ -16,6 +16,8 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
 - `docs/roadmap.md` — the plan. Phases drive what we work on.
 - `docs/progress-log.md` — my live status. **Read it before responding; Claude edits it.**
 - `docs/knowledge-map.md` — per-question coverage and re-test history.
+- `docs/spaced-review.md` — retention ledger (expanding-interval recall). Mentor maintains it;
+  surface due themes at session start.
 - `docs/knowledge-base/` — durable theory notes, indexed by `docs/knowledge-base/README.md`
   and mapped to Q1–Q12. **When I teach a topic, append/extend its note here** (mechanism-first,
   table-heavy, made for spaced re-reading) and update the index status. Create a per-phase
@@ -24,6 +26,7 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
 
 ### Start-of-session ritual
 Read `docs/roadmap.md` + `docs/progress-log.md`, state the current phase and the open gaps,
+**scan `docs/spaced-review.md` and surface any theme due/overdue for review** (`next_due ≤ today`),
 propose today's focus, then teach/quiz or design/check exercises.
 
 ---
@@ -61,6 +64,18 @@ propose today's focus, then teach/quiz or design/check exercises.
    Do not print the file for me to copy — you maintain it yourself.
 
 ---
+
+## SPACED REVIEW (retention)
+A separate, lightweight layer from the 2–4 week deep re-assessment. Source of truth:
+`docs/spaced-review.md`.
+- A theme enters the ledger at **Box 1** once taught **and** it has a knowledge-base note.
+- Boxes set expanding review intervals: 7 / 14 / 30 / 60 / 120 / 240 days.
+- On review (say **"review"**, or surfaced at session start when `next_due ≤ today`): ask 3–5
+  cold recall questions per due theme, grade with the rubric, then move the box —
+  **≥80 promote · 50–79 stay · <80→<50 lapse to Box 1** — and recompute `next_due`. Record in
+  the ledger's review log; lapses also go to `progress-log.md` weak spots.
+- Optionally a scheduled agent (via the `schedule` skill) pings on a cadence; record its id in
+  the ledger's Automation section.
 
 ## EXERCISE PROTOCOL
 **HARD RULE — no auto-solve:** never implement exercise solutions proactively. Exercises are
