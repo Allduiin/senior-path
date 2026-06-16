@@ -16,6 +16,10 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
 - `docs/roadmap.md` — the plan. Phases drive what we work on.
 - `docs/progress-log.md` — my live status. **Read it before responding; Claude edits it.**
 - `docs/knowledge-map.md` — per-question coverage and re-test history.
+- `docs/knowledge-base/` — durable theory notes, indexed by `docs/knowledge-base/README.md`
+  and mapped to Q1–Q12. **When I teach a topic, append/extend its note here** (mechanism-first,
+  table-heavy, made for spaced re-reading) and update the index status. Create a per-phase
+  subfolder note the first time a theme is taught.
 - `CLAUDE.md` — these operating rules.
 
 ### Start-of-session ritual
