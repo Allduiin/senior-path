@@ -63,11 +63,13 @@ Baseline mean ≈ 28.
 | 2026-06-16 | Solved `p1-01` (Q1) via separate-bean; test GREEN | `exercises/p1-01-tx-self-invocation/` |
 | 2026-06-16 | Knowledge base started (hub + Q1 proxy/tx note) | `docs/knowledge-base/` |
 | 2026-06-17 | Q2 reset (`e649967` removed note + p1-02), then **re-taught from scratch** + KB note rewritten | `docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md` |
+| 2026-06-17 | Exercise `p1-02` re-scaffolded (RED by design) — targets Q2; verified `failures=1, errors=0` | `exercises/p1-02-lost-update/` |
 
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
 |---|:--:|:--:|---|---|
 | p1-01-tx-self-invocation | 1 | Q1 | REVIEWED | solved via separate-bean; `payments=1, audits=0`. Stretch 1 verified (REQUIRED → `UnexpectedRollbackException`). Cold re-test passed → Q1 80 (provisionally closed) |
+| p1-02-lost-update | 1 | Q2 | RED | re-scaffolded 2026-06-17; 16 concurrent withdrawals, naive RMW under RC loses updates (`expected 98400, was 99800` — 14 lost). Fix via optimistic `@Version` / pessimistic `FOR UPDATE` / atomic `UPDATE`. Awaiting GREEN. |
 
 ## Open weak spots (priority top-down)
 1. Transactional outbox — pattern not known (Q6).
@@ -76,7 +78,7 @@ Baseline mean ≈ 28.
 4. Coroutines: `coroutineScope` vs `supervisorScope`, cancellation (Q4).
 5. Virtual threads: pinning, CPU-bound (Q5).
 6. Spring proxy self-invocation (Q1). — **p1-01 GREEN (40→70); cold re-test of propagation + proxy-types owed before "closed"; `UnexpectedRollbackException` stretch not yet done.**
-7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Reset then re-taught from scratch (2026-06-17); KB note rewritten. Exercise pending — scaffold a fresh `p1-02` via `/next-exercise` (stage 3). Cold re-test owed before "closed."**
+7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Reset then re-taught from scratch (2026-06-17); KB note rewritten; `p1-02` re-scaffolded RED (stage 3 done). Now at stage 4 — awaiting GREEN. Cold re-test owed before "closed."**
 8. Bulkhead = resource isolation; circuit breaker auto-recovery (Q10).
 9. Tail-latency diagnosis p99/p50 (Q11).
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
@@ -84,8 +86,10 @@ Baseline mean ≈ 28.
 ## Next session focus
 **Q2 was reset (`e649967` removed the note + `p1-02`), then re-taught from scratch on 2026-06-17
 with a freshly rewritten KB note** (`docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md`).
-Theme is now back at **stage 2 complete (teach + KB note)**. Next action is **stage 3 — scaffold a
-fresh `p1-02` (lost-update / isolation) via `/next-exercise`**, verify RED-by-design, then hand off
-for solve (stage 4) → review (stage 5) → enter `docs/spaced-review.md` at EF 2.50 (stage 6, gate
-2→6 satisfied: taught + note). Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28
+Theme is now at **stage 3 complete**: `p1-02-lost-update` re-scaffolded and verified RED by design
+(`failures=1, errors=0`; 14/16 withdrawals lost under READ COMMITTED). Next action is **stage 4 —
+solve it**: `./gradlew :p1-02-lost-update:test` GREEN via ONE of optimistic `@Version` (+retry),
+pessimistic `FOR UPDATE`, or atomic `UPDATE … SET balance = balance - :amt`, then fill the SPEC
+Analysis. Then review (stage 5) → enter `docs/spaced-review.md` at EF 2.50 (stage 6, gate 2→6
+satisfied: taught + note). Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28
 cycle (REQUIRED-vs-REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs per-call interceptor).
