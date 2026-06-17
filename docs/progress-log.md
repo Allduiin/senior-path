@@ -63,6 +63,7 @@ Baseline mean ≈ 28.
 | 2026-06-16 | Solved `p1-01` (Q1) via separate-bean; test GREEN | `exercises/p1-01-tx-self-invocation/` |
 | 2026-06-16 | Knowledge base started (hub + Q1 proxy/tx note) | `docs/knowledge-base/` |
 | 2026-06-17 | Exercise `p1-02` created (RED by design) — targets Q2 (lost update / locking) | `exercises/p1-02-lost-update/` |
+| 2026-06-17 | Q2 taught (isolation/MVCC, RC lost update, PG-SI vs InnoDB RR, opt/pess/atomic) + KB note written | `docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md` |
 
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
@@ -77,16 +78,17 @@ Baseline mean ≈ 28.
 4. Coroutines: `coroutineScope` vs `supervisorScope`, cancellation (Q4).
 5. Virtual threads: pinning, CPU-bound (Q5).
 6. Spring proxy self-invocation (Q1). — **p1-01 GREEN (40→70); cold re-test of propagation + proxy-types owed before "closed"; `UnexpectedRollbackException` stretch not yet done.**
-7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **p1-02 RED (lost update under READ COMMITTED); fix via optimistic/pessimistic/atomic locking.**
+7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Taught + KB note written (2026-06-17). p1-02 still RED — solve it (stage 4), then review + score (stage 5) + enter spaced review (stage 6). Cold re-test owed before "closed."**
 8. Bulkhead = resource isolation; circuit breaker auto-recovery (Q10).
 9. Tail-latency diagnosis p99/p50 (Q11).
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
+**Q2 is at stage 4 (solve).** Taught + KB note written 2026-06-17
+(`docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md`). Next action:
+**solve `p1-02-lost-update`** — `./gradlew :p1-02-lost-update:test` — pick ONE of optimistic
+`@Version`+retry, pessimistic `FOR UPDATE`, or atomic `UPDATE`, fill the SPEC Analysis (RC
+lost-update mechanism; PG SI vs InnoDB RR; opt/pess/atomic tradeoffs). On GREEN, resume
+`/learn-theme Q2` → review + score (stage 5) + enter `docs/spaced-review.md` at EF 2.50 (stage 6).
 Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28 cycle (REQUIRED-vs-
 REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs per-call interceptor).
-Main work: **Q2 — isolation levels & MVCC**. `p1-02-lost-update` scaffolded RED (2026-06-17):
-solve it (`./gradlew :p1-02-lost-update:test`) — pick optimistic `@Version`+retry, pessimistic
-`FOR UPDATE`, or atomic `UPDATE`, and fill the SPEC Analysis (READ COMMITTED lost-update
-mechanism; PG snapshot isolation vs InnoDB REPEATABLE READ; optimistic vs pessimistic tradeoffs).
-On GREEN, mentor writes the Q2 KB note and adds it to `docs/spaced-review.md`.
