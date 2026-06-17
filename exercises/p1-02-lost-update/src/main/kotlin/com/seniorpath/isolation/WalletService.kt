@@ -2,6 +2,9 @@ package com.seniorpath.isolation
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.context.annotation.Lazy
+import org.springframework.dao.OptimisticLockingFailureException
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * p1-02 — Lost update under READ COMMITTED; optimistic vs pessimistic vs atomic (targets Q2).
@@ -47,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class WalletService(
     private val wallets: WalletRepository,
+    @Lazy private val self: WalletService
 ) {
 
     /** Opens a wallet seeded with [initialBalance] minor units and returns its id. */
@@ -64,8 +68,25 @@ class WalletService(
      * BUG: naive read-modify-write — not atomic across concurrent transactions.
      * TODO(task 2): make this lose ZERO updates under concurrency, via (a), (b) or (c).
      */
-    @Transactional
     fun withdraw(walletId: Long, amount: Long) {
+        var attempt = 0
+
+        while (true) {
+            try {
+                self.withdrawAttempt(walletId, amount)
+                break
+            } catch (e: OptimisticLockingFailureException) {
+                if (++attempt >= MAX_ATTEMPTS) {
+                    throw e
+                } else {
+                    Thread.sleep(BASE_BACKOFF_MS + ThreadLocalRandom.current().nextLong(JITTER_MS))
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public fun withdrawAttempt(walletId: Long, amount: Long) {
         // 1. READ
         val wallet = wallets.findById(walletId).orElseThrow()
 
@@ -92,5 +113,8 @@ class WalletService(
     companion object {
         /** Width of the read-modify-write window, in milliseconds. Part of the scenario. */
         const val COMPUTE_WINDOW_MILLIS = 25L
+        const val MAX_ATTEMPTS = 20
+        const val BASE_BACKOFF_MS = 100L
+        const val JITTER_MS = 200L
     }
 }

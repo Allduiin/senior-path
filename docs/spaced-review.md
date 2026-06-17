@@ -65,6 +65,7 @@ Reference date for seeding: **2026-06-16**.
 | Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
 |---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
 | Spring proxy AOP & `@Transactional` propagation | Q1 | [link](knowledge-base/phase-1-distributed-tx/spring-proxy-and-transactions.md) | 2.50 | 1 | 7 | 2026-06-16 | **2026-06-23** | 2026-06-16 closed cold @80 (q4) → EF 2.50, reps 1, +7d |
+| Isolation levels & MVCC | Q2 | [link](knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md) | 2.18 | 0 | 2 | 2026-06-17 | **2026-06-19** | 2026-06-17 entered; first cold @55 (q2) → lapse: EF 2.50→2.18, reps 0, +2d. Gaps: atomic current-read, SSI, tradeoff axes |
 
 > Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
 > first successful review).
@@ -79,4 +80,4 @@ unless something is due — set up via the `schedule` skill and record the routi
 ## Review log
 | Date | Themes reviewed | Grade → q | EF/interval change |
 |---|---|---|---|
-| _none yet_ | | | |
+| 2026-06-17 | Q2 isolation & MVCC (entry, stage-5 cold quiz) | 55 → q2 | EF 2.50→2.18, reps 0, interval 2, due 2026-06-19 |

@@ -41,7 +41,7 @@ Full per-cell detail lives in `knowledge-map.md`. Baseline (2026-06-14), scores 
 | Q | Topic | Score |
 |---|---|:--:|
 | Q1 | Tx propagation / proxy self-invocation | 40 → 80 |
-| Q2 | Isolation levels & MVCC | 35 |
+| Q2 | Isolation levels & MVCC | 35 → 55 |
 | Q3 | N+1 / fetch strategies | 55 |
 | Q4 | Coroutine scopes & cancellation | 10 |
 | Q5 | Virtual threads & pinning | 35 |
@@ -64,12 +64,14 @@ Baseline mean ≈ 28.
 | 2026-06-16 | Knowledge base started (hub + Q1 proxy/tx note) | `docs/knowledge-base/` |
 | 2026-06-17 | Q2 reset (`e649967` removed note + p1-02), then **re-taught from scratch** + KB note rewritten | `docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md` |
 | 2026-06-17 | Exercise `p1-02` re-scaffolded (RED by design) — targets Q2; verified `failures=1, errors=0` | `exercises/p1-02-lost-update/` |
+| 2026-06-17 | Solved `p1-02` (Q2) — optimistic `@Version` + self-injected-proxy retry, jittered backoff; test GREEN, REVIEWED | `exercises/p1-02-lost-update/` |
+| 2026-06-17 | Q2 cold quiz (5 Qs) → 35→55; entered spaced-review | `docs/knowledge-map.md`, `docs/spaced-review.md` |
 
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
 |---|:--:|:--:|---|---|
 | p1-01-tx-self-invocation | 1 | Q1 | REVIEWED | solved via separate-bean; `payments=1, audits=0`. Stretch 1 verified (REQUIRED → `UnexpectedRollbackException`). Cold re-test passed → Q1 80 (provisionally closed) |
-| p1-02-lost-update | 1 | Q2 | RED | re-scaffolded 2026-06-17; 16 concurrent withdrawals, naive RMW under RC loses updates (`expected 98400, was 99800` — 14 lost). Fix via optimistic `@Version` / pessimistic `FOR UPDATE` / atomic `UPDATE`. Awaiting GREEN. |
+| p1-02-lost-update | 1 | Q2 | REVIEWED | solved via optimistic `@Version` + retry through a self-injected proxy (per-attempt tx, narrowed catch, jittered backoff); GREEN at €984.00, failures empty. Code review clean. Q2 cold quiz 35→55 (gaps below). SPEC Analysis still owed (written record). |
 
 ## Open weak spots (priority top-down)
 1. Transactional outbox — pattern not known (Q6).
@@ -78,18 +80,20 @@ Baseline mean ≈ 28.
 4. Coroutines: `coroutineScope` vs `supervisorScope`, cancellation (Q4).
 5. Virtual threads: pinning, CPU-bound (Q5).
 6. Spring proxy self-invocation (Q1). — **p1-01 GREEN (40→70); cold re-test of propagation + proxy-types owed before "closed"; `UnexpectedRollbackException` stretch not yet done.**
-7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Reset then re-taught from scratch (2026-06-17); KB note rewritten; `p1-02` re-scaffolded RED (stage 3 done). Now at stage 4 — awaiting GREEN. Cold re-test owed before "closed."**
+7. Isolation levels & MVCC (Q2) — **p1-02 solved + REVIEWED (2026-06-17); cold quiz 35→55, NOT closed. Three reinforcement targets: (a) the ATOMIC fix's current-read-under-row-lock (confused it with optimistic versioning); (b) name SSI as the write-skew mechanism; (c) articulate optimistic/pessimistic/atomic TRADEOFF axes (contention profile + failure mode), not just mechanisms. In spaced-review (lapsed q2 → due 2026-06-19).**
 8. Bulkhead = resource isolation; circuit breaker auto-recovery (Q10).
 9. Tail-latency diagnosis p99/p50 (Q11).
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
-**Q2 was reset (`e649967` removed the note + `p1-02`), then re-taught from scratch on 2026-06-17
-with a freshly rewritten KB note** (`docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md`).
-Theme is now at **stage 3 complete**: `p1-02-lost-update` re-scaffolded and verified RED by design
-(`failures=1, errors=0`; 14/16 withdrawals lost under READ COMMITTED). Next action is **stage 4 —
-solve it**: `./gradlew :p1-02-lost-update:test` GREEN via ONE of optimistic `@Version` (+retry),
-pessimistic `FOR UPDATE`, or atomic `UPDATE … SET balance = balance - :amt`, then fill the SPEC
-Analysis. Then review (stage 5) → enter `docs/spaced-review.md` at EF 2.50 (stage 6, gate 2→6
-satisfied: taught + note). Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28
-cycle (REQUIRED-vs-REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs per-call interceptor).
+**Q2 is through the full flow for this cycle: re-taught from scratch, KB note rewritten, `p1-02`
+solved (optimistic `@Version` + self-injected-proxy retry) GREEN and REVIEWED, cold-quizzed 35→55,
+and entered into `docs/spaced-review.md` (stages 1–6 done).** It is **NOT closed** — three
+reinforcement targets carry forward: (a) the **atomic** fix's *current-read-under-row-lock* (was
+confused with optimistic versioning); (b) **SSI** as the write-skew mechanism; (c) the
+optimistic/pessimistic/atomic **tradeoff axes** (contention profile + failure mode). Q2 is due in
+spaced-review **2026-06-19** (lapsed q2) — run `/repeat-knowledge` then; it should re-quiz exactly
+those three. Optional: write the SPEC Analysis (durable record; reinforces the same gaps).
+Q1 provisionally closed (80) — re-confirm at the 2026-06-28 cycle (REQUIRED-vs-REQUIRES_NEW + name
+`rollbackOnly`; proxy = startup wiring vs per-call interceptor). Candidate next theme: open the
+next phase-1 gap (Q6 transactional outbox) or Q3 fetch strategies via `/learn-theme`.

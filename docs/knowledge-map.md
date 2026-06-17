@@ -13,7 +13,7 @@
 | Q | Topic | Pillar | Baseline 2026-06-14 | Latest | Status |
 |---|---|---|:--:|:--:|---|
 | Q1 | Tx propagation / proxy self-invocation | Distributed/Spring | 40 | 80 | provisionally CLOSED — trap answered cold; confirm at next cycle |
-| Q2 | Isolation levels & MVCC | Persistence | 35 | 35 | open |
+| Q2 | Isolation levels & MVCC | Persistence | 35 | 55 | open — solve GREEN; gaps: atomic current-read, SSI, tradeoff axes |
 | Q3 | N+1 / fetch strategies | Persistence | 55 | 55 | open |
 | Q4 | Coroutine scopes & cancellation | Concurrency | 10 | 10 | open |
 | Q5 | Virtual threads & pinning | Concurrency | 35 | 35 | open (inverted intuition) |
@@ -34,3 +34,4 @@ Baseline mean ≈ 28.
 | 2026-06-16 | Q1 teach + p1-01 solved (separate-bean) | Q1 | Bypass intuition correct cold; proxy-types (JDK/CGLIB + Kotlin all-open) and full 7-propagation set taught; fix implemented, test GREEN. 40→70. Not closed: cold re-test of propagation/proxy-types still owed. |
 | 2026-06-16 | Cold re-test Q1 (6 Qs) | Q1 | Strong: bypass (85), 7-propagation breadth + MANDATORY/NEVER/NOT_SUPPORTED (85), tradeoffs (75), rollback rule (75). **Weak: REQUIRED trap (15) — answered with the REQUIRES_NEW outcome despite just seeing `UnexpectedRollbackException`; proxy-types Kotlin half skipped (50).** Holds at 70 — NOT closed. Re-test the REQUIRED-vs-REQUIRES_NEW distinction next session. |
 | 2026-06-16 | Re-ask: REQUIRED trap (after "miscommunication") | Q1 | Cold & correct: 1 tx (REQUIRED joins), 0/0 rows, `UnexpectedRollbackException`. Minor: didn't name `rollbackOnly`; conflated proxy build (startup) with per-call interceptor. **70→80, bar met (provisional — confirm at 2026-06-28 cycle).** |
+| 2026-06-17 | Q2 re-taught + p1-02 solved (optimistic `@Version` + retry) + 5-Q cold quiz | Q2 | Solve GREEN (self-injected proxy, per-attempt tx, narrowed catch, jittered backoff). Cold quiz: PG abort vs InnoDB block (85), invariant placement (70) strong; **weak: atomic current-read-under-lock confused with optimistic versioning (35), SSI not named for write skew (50), optimistic/pessimistic/atomic tradeoff axes not articulated (40)**. 35→55. NOT closed. |

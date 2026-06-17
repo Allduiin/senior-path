@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 
 /**
  * A money wallet. [balance] is held in MINOR UNITS (cents) as a Long — never a floating-point
@@ -36,4 +37,8 @@ class Wallet(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
+
+    @Version
+    @Column(nullable = false)
+    val version: Long = 0
 )
