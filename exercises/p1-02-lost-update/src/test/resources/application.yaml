@@ -1,0 +1,16 @@
+# Test config: the Testcontainers Postgres is ephemeral, so let Hibernate create
+# the schema. Datasource URL/credentials are supplied by @ServiceConnection.
+#
+# We deliberately keep the DEFAULT isolation level (READ COMMITTED) — the whole point of
+# the exercise is that lost updates occur there and must be prevented by locking, not by
+# escalating the global isolation level.
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org.springframework.transaction: INFO

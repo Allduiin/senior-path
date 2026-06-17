@@ -1,0 +1,12 @@
+# Production-side config. The integration test overrides datasource wiring via
+# Testcontainers @ServiceConnection, so no real database is needed to run tests.
+spring:
+  application:
+    name: p1-02-lost-update
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
