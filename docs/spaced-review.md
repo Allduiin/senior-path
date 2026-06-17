@@ -50,8 +50,14 @@ every few days unless you actually forget it.
 
 ## Triggers
 - **Every session start** the mentor scans this ledger; if any `next_due ≤ today`, it announces
-  what's due and offers to run `/repeat-knowledge`.
-- Run **`/repeat-knowledge`** (or say "review") any time to quiz all due themes now.
+  what's due (and how many) and offers to run `/repeat-knowledge`.
+- Run **`/repeat-knowledge`** (or say "review") any time to quiz due themes now.
+
+### Session budget (scales to many themes)
+A run reviews at most **8 themes** (≈15 min); the rest stay due and carry to the next run.
+Priority: lapsed / lowest-EF → most overdue → soonest due. Override with `/repeat-knowledge N`
+or `/repeat-knowledge all`. Because SM-2 spreads `next_due` out as themes mature, steady-state
+load stays small even at 30–50 themes; the budget only bites during ramp-up or after a gap.
 
 ## Ledger
 Reference date for seeding: **2026-06-16**.

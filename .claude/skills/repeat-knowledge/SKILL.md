@@ -13,9 +13,16 @@ The full SM-2 spec (EF formula, grade→q map, interval rules) lives in `docs/sp
 
 ## Procedure
 
-1. **Select due themes.** Read `docs/spaced-review.md`. Today's date comes from the session
-   context. Pick every row where `next_due ≤ today` (overdue included). If none are due, say so
-   and offer to review the soonest-upcoming theme anyway (optional early review) — do not force it.
+1. **Select due themes (with a budget).** Read `docs/spaced-review.md`. Today's date comes from
+   the session context. Collect every row where `next_due ≤ today` (overdue included).
+   - **Budget:** review at most **8 themes per run** (≈15 min), unless the user passes an override
+     arg — `/repeat-knowledge N` (do up to N) or `/repeat-knowledge all` (clear the whole backlog).
+   - **Priority** when more are due than the budget: ① lapsed / lowest EF first (most at-risk) →
+     ② most overdue (largest `today − next_due`) → ③ soonest due. Spend the budget on the riskiest.
+   - **Carry-over:** themes beyond the budget are NOT touched — they stay due and lead the next
+     run. At the end, report "reviewed X, Y still due" so the backlog is visible.
+   - If nothing is due, say so and offer an optional early review of the soonest-upcoming theme —
+     do not force it.
 
 2. **Quiz cold, one theme at a time.** For each due theme, ask **3–5** short recall questions
    drawn from its knowledge-base note (the `KB note` link in the ledger row). Rules:
