@@ -113,7 +113,6 @@ Two cadences, two skills:
 | Exercise | Phase | Targets | Created | Status | Run |
 |---|:--:|:--:|:--:|---|---|
 | [p1-01-tx-self-invocation](exercises/p1-01-tx-self-invocation/SPEC.md) | 1 | Q1 | 2026-06-14 | REVIEWED (Q1→80, 2026-06-16) | `./gradlew :p1-01-tx-self-invocation:test` |
-| [p1-02-lost-update](exercises/p1-02-lost-update/SPEC.md) | 1 | Q2 | 2026-06-17 | RED | `./gradlew :p1-02-lost-update:test` |
 
 > Status legend: **RED** = issued, tests fail by design · **GREEN** = I made it pass ·
 > **REVIEWED** = passed and discussed with mentor.
