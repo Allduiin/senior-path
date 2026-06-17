@@ -14,7 +14,7 @@ Status legend: ✅ written · ✍️ partial · ⬜ not yet written.
 | Theme | Maps to | Status | Note |
 |---|:--:|:--:|---|
 | Spring proxy AOP & `@Transactional` propagation | Q1 | ✅ | [phase-1-distributed-tx/spring-proxy-and-transactions.md](phase-1-distributed-tx/spring-proxy-and-transactions.md) |
-| Isolation levels & MVCC | Q2 | ⬜ | _pending_ |
+| Isolation levels & MVCC | Q2 | ✅ | [phase-1-distributed-tx/isolation-levels-and-mvcc.md](phase-1-distributed-tx/isolation-levels-and-mvcc.md) |
 | Transactional outbox & the dual-write problem | Q6 | ⬜ | _pending_ |
 | Idempotent consumption (keys, dedup, failure window) | Q7 | ⬜ | _pending_ |
 | Delivery semantics & effectively-once | Q8 | ⬜ | _pending_ |
