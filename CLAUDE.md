@@ -14,6 +14,9 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
 
 ### Sources of truth (all in this repo)
 - `docs/roadmap.md` — the plan. Phases drive what we work on.
+- `docs/learning-flow.md` — the canonical **8-stage per-theme lifecycle** (diagnose → teach →
+  KB note → exercise → solve → review → retention → re-assess) and the gates between stages.
+  Drive a theme through it with the **`/learn-theme`** skill.
 - `docs/progress-log.md` — my live status. **Read it before responding; Claude edits it.**
 - `docs/knowledge-map.md` — per-question coverage and re-test history.
 - `docs/spaced-review.md` — retention ledger (expanding-interval recall). Mentor maintains it;
@@ -75,6 +78,13 @@ A separate, lightweight layer from the 2–4 week deep re-assessment. Source of 
 - At session start, if any theme is due (`next_due ≤ today`), announce it and offer `/repeat-knowledge`.
   Running it quizzes due themes cold, grades, applies SM-2, updates the ledger, logs lapses to
   weak spots, and commits.
+
+## LEARNING FLOW (the lifecycle)
+Every theme (Q1–Q12 and later cells) travels the **8-stage flow** in `docs/learning-flow.md`:
+diagnose → teach → KB note → exercise (RED) → solve (GREEN) → review → enter retention → deep
+re-assess. The focused skills below each own one or two stages; the **`/learn-theme`** skill is
+the orchestrator that sequences them for a single theme — it resolves where the theme already is,
+advances to the next user gate, and hands off (it **never** solves the exercise — stage 4 is mine).
 
 ## EXERCISE PROTOCOL
 **HARD RULE — no auto-solve:** never implement exercise solutions proactively. Exercises are
