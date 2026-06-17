@@ -62,6 +62,7 @@ Baseline mean ≈ 28.
 | 2026-06-14 | Exercise `p1-01` created (RED by design) — targets Q1 | `exercises/p1-01-tx-self-invocation/` |
 | 2026-06-16 | Solved `p1-01` (Q1) via separate-bean; test GREEN | `exercises/p1-01-tx-self-invocation/` |
 | 2026-06-16 | Knowledge base started (hub + Q1 proxy/tx note) | `docs/knowledge-base/` |
+| 2026-06-17 | Q2 reset (`e649967` removed note + p1-02), then **re-taught from scratch** + KB note rewritten | `docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md` |
 
 ## Exercise tracker
 | Exercise | Phase | Targets | Status | Result |
@@ -75,16 +76,16 @@ Baseline mean ≈ 28.
 4. Coroutines: `coroutineScope` vs `supervisorScope`, cancellation (Q4).
 5. Virtual threads: pinning, CPU-bound (Q5).
 6. Spring proxy self-invocation (Q1). — **p1-01 GREEN (40→70); cold re-test of propagation + proxy-types owed before "closed"; `UnexpectedRollbackException` stretch not yet done.**
-7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Taught + KB note written (2026-06-17). Exercise pending (re-scaffold via `/next-exercise` when ready). Cold re-test owed before "closed."**
+7. InnoDB default = REPEATABLE READ; MVCC vs locking (Q2). — **Reset then re-taught from scratch (2026-06-17); KB note rewritten. Exercise pending — scaffold a fresh `p1-02` via `/next-exercise` (stage 3). Cold re-test owed before "closed."**
 8. Bulkhead = resource isolation; circuit breaker auto-recovery (Q10).
 9. Tail-latency diagnosis p99/p50 (Q11).
 10. Batch fetching / `@EntityGraph`; equals/hashCode buckets (Q3, Q12).
 
 ## Next session focus
-**Q2 is taught (stage 2) with its KB note written 2026-06-17**
-(`docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md`). The hands-on
-exercise was removed; next action is to **re-scaffold a Q2 exercise via `/next-exercise`**
-(lost-update / isolation theme) to resume the flow at stage 3, then solve → review → enter
-`docs/spaced-review.md` at EF 2.50. Q1 provisionally closed (80) — re-confirm briefly at the
-2026-06-28 cycle (REQUIRED-vs-REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs
-per-call interceptor).
+**Q2 was reset (`e649967` removed the note + `p1-02`), then re-taught from scratch on 2026-06-17
+with a freshly rewritten KB note** (`docs/knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md`).
+Theme is now back at **stage 2 complete (teach + KB note)**. Next action is **stage 3 — scaffold a
+fresh `p1-02` (lost-update / isolation) via `/next-exercise`**, verify RED-by-design, then hand off
+for solve (stage 4) → review (stage 5) → enter `docs/spaced-review.md` at EF 2.50 (stage 6, gate
+2→6 satisfied: taught + note). Q1 provisionally closed (80) — re-confirm briefly at the 2026-06-28
+cycle (REQUIRED-vs-REQUIRES_NEW + name `rollbackOnly`; proxy = startup wiring vs per-call interceptor).
