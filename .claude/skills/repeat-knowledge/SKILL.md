@@ -46,10 +46,12 @@ The full SM-2 spec (EF formula, grade→q map, interval rules) lives in `docs/sp
    deep-assessment cell moved materially, reflect the score in `knowledge-map.md` too.
 
 6. **Commit** the doc changes: `chore(review): <date> spaced review — <themes> (<pass/lapse>)`
-   with the project's AI-attribution trailer (`Co-Authored-By: Claude Opus 4.8`, via HEREDOC).
+   with the project's AI-attribution trailer (`Co-Authored-By:` naming the current model, via
+   HEREDOC).
 
 ## Notes
 - A theme enters the ledger (EF 2.50, reps 0) only once it has been taught **and** has a KB note.
 - Keep questions fresh across reviews (don't reuse the same 3 every time) — recall must be genuine.
-- Delivery is **session-start surfacing** (no scheduled agent) per the ledger's Automation
-  section: at session start, if anything is due, announce it and offer to run `/repeat-knowledge`.
+- Delivery is **session-start surfacing** per the ledger's Automation section: at session start,
+  if anything is due, announce it and offer to run `/repeat-knowledge`. (**Telegram notifications
+  are planned** as the proactive channel — see `docs/spaced-review.md` → Automation.)

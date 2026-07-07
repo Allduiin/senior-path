@@ -15,9 +15,12 @@ current phase and the top open gap.
 
 ## Procedure
 
-1. **Pick the topic.** Read `docs/roadmap.md` (current phase + topics) and `docs/progress-log.md`
-   (open weak spots, lowest/ fragile diagnostic cells). Choose the highest-leverage gap in the
+1. **Pick the topic.** Read `docs/roadmap.md` (current phase + topics), `docs/progress-log.md`
+   (open weak spots), and `docs/knowledge-map.md` (scores). Choose the highest-leverage gap in the
    current phase unless the user named one. State the chosen Q(s) and why before scaffolding.
+   **Arcs & capstones:** tightly coupled themes (e.g. Q6+Q7+Q8) or the phase capstone share ONE
+   module with staged tasks (`docs/learning-flow.md` → Multi-theme arcs) — prefer extending the
+   arc module over scaffolding a new isolated one.
 
 2. **Scaffold `exercises/p{phase}-{NN}-{slug}/`** by copying `exercises/_TEMPLATE/`. The `{NN}`
    is the next free number within the phase. Include:
@@ -38,16 +41,19 @@ current phase and the top open gap.
      (`failures>=1, errors=0`) to prove it's an assertion failure, not an infra error.
      (Docker must be running for Testcontainers.)
 
-5. **Index it.** Append a row to the `## Exercise index` table in `CLAUDE.md` (status **RED**) and
-   reflect it in `docs/progress-log.md` (Exercise tracker + Completed-tasks + the active weak spot).
+5. **Index it.** Append a row to the `## Exercise index` table in `CLAUDE.md` (status **RED** —
+   the index is the single owner of exercise status) and log the event in `docs/progress-log.md`
+   Completed-tasks.
 
 6. **Hand off.** Print the exact test command and what "done" looks like (the observable end-state
    the test checks). Commit: `feat(p{phase}-{NN}): scaffold <slug> (Q<n>) — RED by design` with the
-   AI-attribution trailer (`Co-Authored-By: Claude Opus 4.8`, via HEREDOC).
+   AI-attribution trailer (`Co-Authored-By:` naming the current model, via HEREDOC).
 
 ## Guardrails
 - **No auto-solve.** Ship the bug/TODOs and the failing test — not the fix.
 - **RED for the right reason.** Verify via the test report that it's an assertion failure.
-- **Two indexes stay in sync.** `CLAUDE.md` exercise index *and* `progress-log.md` tracker.
-- On GREEN later, the mentor updates status RED → GREEN → REVIEWED and, once the theme has a KB
-  note, ensures it's in `docs/spaced-review.md` (see `/repeat-knowledge`).
+- **One owner per fact.** Status lives only in the `CLAUDE.md` index; scores only in
+  `knowledge-map.md`; the progress log records events.
+- On GREEN later, the mentor updates status RED → GREEN → REVIEWED — **REVIEWED requires the
+  SPEC Analysis filled (ANALYSIS GATE in `CLAUDE.md`)** — and, once the theme has a KB note,
+  ensures it's in `docs/spaced-review.md` (see `/repeat-knowledge`).

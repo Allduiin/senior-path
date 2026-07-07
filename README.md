@@ -5,8 +5,12 @@ Everything lives here: the plan, my live progress, the mentoring rules, and hand
 exercises I solve myself.
 
 - **Plan:** [`docs/roadmap.md`](docs/roadmap.md) — five phases, calibrated from a 12-question diagnostic.
-- **Live status:** [`docs/progress-log.md`](docs/progress-log.md) — per-pillar levels, phase tracker, re-test scores. Maintained by Claude Code.
-- **Coverage:** [`docs/knowledge-map.md`](docs/knowledge-map.md) — per-question history across re-tests.
+- **Lifecycle:** [`docs/learning-flow.md`](docs/learning-flow.md) — the 8-stage per-theme flow, its gates, multi-theme arcs & phase capstones.
+- **Live status:** [`docs/progress-log.md`](docs/progress-log.md) — per-pillar levels, phase tracker, session history. Maintained by Claude Code.
+- **Scores:** [`docs/knowledge-map.md`](docs/knowledge-map.md) — per-question scores & history (single owner of the numbers).
+- **Retention:** [`docs/spaced-review.md`](docs/spaced-review.md) — SM-2 spaced-recall ledger.
+- **Theory:** [`docs/knowledge-base/`](docs/knowledge-base/README.md) — durable mechanism-first notes per theme.
+- **Reading:** [`docs/reading-log.md`](docs/reading-log.md) — the continuous reading/writing track.
 - **Operating rules:** [`CLAUDE.md`](CLAUDE.md) — mentor rules, exercise protocol, the no-auto-solve hard rule, exercise index.
 
 ## The session model
@@ -47,12 +51,20 @@ RabbitMQ automatically — no manual database or broker setup).
 ## Layout
 ```
 senior-path/
-├── CLAUDE.md                 # operating rules + exercise index
-├── docs/                     # roadmap, progress-log, knowledge-map
+├── CLAUDE.md                 # operating rules + exercise index (status owner)
+├── docs/
+│   ├── roadmap.md            # the plan (5 phases + continuous track)
+│   ├── learning-flow.md      # 8-stage per-theme lifecycle + gates + arcs/capstones
+│   ├── progress-log.md       # live status (levels, phases, session history)
+│   ├── knowledge-map.md      # per-question scores (single owner of the numbers)
+│   ├── spaced-review.md      # SM-2 retention ledger
+│   ├── reading-log.md        # continuous reading/writing track
+│   └── knowledge-base/       # durable theory notes, indexed by README.md
+├── .claude/skills/           # /learn-theme, /next-exercise, /repeat-knowledge, /assess
 ├── build-logic/              # Gradle convention plugins (shared build setup)
 ├── gradle/libs.versions.toml # version catalog (single source of truth)
 ├── exercises/
 │   ├── _TEMPLATE/            # copy source for new exercises
-│   └── p1-01-tx-self-invocation/
+│   └── p1-NN-*/              # one module per exercise (SPEC + skeleton + failing tests)
 └── solutions/                # gitignored; populated only on explicit request
 ```

@@ -56,6 +56,9 @@ publish; observe the lost event; fix with outbox.
 - Virtual threads: what they help (blocking I/O), what they don't (CPU-bound), and **pinning** (`synchronized`/native calls defeat them; fix with `ReentrantLock`) (Q5).
 - Structured concurrency & scoped values (Java 21/25).
 - Kotlin coroutines: dispatchers, `coroutineScope` vs `supervisorScope`, cancellation, `Flow` & backpressure (Q4).
+- **Kotlin-language depth** (for the "Kotlin" half of the title): idiomatic domain modeling —
+  sealed hierarchies, value classes, invariant-enforcing constructors; context parameters
+  (stable in 2.4); `Flow` operator design. Gets its own knowledge-map cells (Q13+) when taught.
 
 **Resources**
 - *Java Concurrency in Practice* (Goetz) — canonical for the JMM; pre-Loom, so pair with virtual-thread JEPs (444, 453) and JDK docs.
@@ -134,9 +137,17 @@ slow dependency, diagnose the p99 spike. Add a correctly-configured bulkhead + c
 ---
 
 ## Continuous (all phases)
+- **Design corner (from Phase 1, not Phase 4):** ~10 min in ordinary sessions — after a theme,
+  place it in a real system verbally ("where does the outbox sit in a PSP integration?"). System
+  design is the largest senior delta; the reps must start early and compound. Once a month, run
+  the Q9 prompt as a spoken 20-minute walkthrough.
+- **Apply at work within a week:** after each theme, find where the current codebase handles (or
+  mishandles) it — one real code-reading against a fresh mental model beats a second toy exercise.
 - Do a real Spring Boot 3 → 4 (Framework 7, Jackson 3) / Java 25 migration of one module.
 - Track Kotlin 2.4 features (context parameters now stable).
-- One engineering blog post or paper per week in weak domains.
+- One engineering blog post or paper per week in weak domains — **tracked in
+  `docs/reading-log.md`** (chapter/article + a 1-paragraph takeaway; the takeaway doubles as a
+  retrieval rep). DDIA ch. 7–9, 11 is the spine — log chapters as they're read.
 
 ---
 

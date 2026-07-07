@@ -15,8 +15,10 @@ pillar levels. Cadence: every **2–4 weeks** (`progress-log.md` → Meta → Ne
 
 ## Procedure
 
-1. **Scope the round.** Read `docs/knowledge-map.md` + `docs/progress-log.md`. Build the question
-   set from four buckets:
+1. **Scope the round.** Read `docs/knowledge-map.md` + `docs/progress-log.md`.
+   **Baseline mode:** if the knowledge map has no operative baseline (e.g. after a fresh start),
+   run the full Q1–Q12 set cold, record it as the new baseline column, and recalibrate all pillar
+   levels from it — skip the bucket logic below. Otherwise build the question set from four buckets:
    - **Retest** open / low cells (score < 70).
    - **Confirm** fragile cells (50–79) and **deep-check recently-closed** ones (≥80) — verify
      retention beyond the spaced-review pass, with *new* questions.
@@ -36,15 +38,15 @@ pillar levels. Cadence: every **2–4 weeks** (`progress-log.md` → Meta → Ne
      (draft): pillar mean < 40 → L2 · 40–59 → L3 · 60–79 → L4 · 80–89 → L5 · 90+ → L6, raising
      confidence from "low" once ≥2 cells in the pillar are ≥80. *(Validate/adjust this mapping
      against reality during the first assessment.)*
-   - Update the diagnostic summary scores, reorder "Open weak spots", set phase status, and set
-     **Last assessment = today**, **Next due = today + 2–4 weeks**.
+   - Reorder "Open weak spots" (gaps only — scores stay in the knowledge map), set phase status,
+     and set **Last assessment = today**, **Next due = today + 2–4 weeks**.
 
 5. **Sync spaced review.** Any theme that is now closed **and** has a KB note must be present in
    `docs/spaced-review.md` (enter at EF 2.50, reps 0 if new). A cell that regressed should lapse
    its ledger row.
 
 6. **Commit** all doc changes: `chore(assess): <date> re-assessment — <summary>` with the
-   AI-attribution trailer (HEREDOC).
+   AI-attribution trailer (`Co-Authored-By:` naming the current model, via HEREDOC).
 
 ## Boundaries
 - This does **not** create exercises (`/next-exercise`) or run the light retention pass

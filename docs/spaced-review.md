@@ -60,24 +60,22 @@ or `/repeat-knowledge all`. Because SM-2 spreads `next_due` out as themes mature
 load stays small even at 30–50 themes; the budget only bites during ramp-up or after a gap.
 
 ## Ledger
-Reference date for seeding: **2026-06-16**.
+> **Fresh start 2026-07-07** — ledger reset (pilot rows archived in git history). Themes re-enter
+> as they are re-taught with a KB note (EF 2.50, reps 0). Q1/Q2 KB notes already exist from the
+> pilot; those themes re-enter after their fresh teach/review, not automatically.
 
 | Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
 |---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
-| Spring proxy AOP & `@Transactional` propagation | Q1 | [link](knowledge-base/phase-1-distributed-tx/spring-proxy-and-transactions.md) | 2.50 | 1 | 7 | 2026-06-16 | **2026-06-23** | 2026-06-16 closed cold @80 (q4) → EF 2.50, reps 1, +7d |
-| Isolation levels & MVCC | Q2 | [link](knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md) | 2.18 | 0 | 2 | 2026-06-17 | **2026-06-19** | 2026-06-17 entered; first cold @55 (q2) → lapse: EF 2.50→2.18, reps 0, +2d. Gaps: atomic current-read, SSI, tradeoff axes |
 
 > Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
 > first successful review).
 
 ## Automation
-**Chosen: session-start surfacing only** (2026-06-16). No scheduled cloud agent — due themes are
-surfaced when a session opens here, plus on-demand via `/repeat-knowledge`. Reliable, no infra; the
-trade-off is it fires only when you start a session, so open one every several days to stay on
-the curve. _If a proactive ping is wanted later:_ preferred cadence **every 3 days**, silent
-unless something is due — set up via the `schedule` skill and record the routine id here.
+**Current: session-start surfacing** — due themes are surfaced when a session opens here, plus
+on-demand via `/repeat-knowledge`. **Planned: Telegram notifications** (decided 2026-07-07) — a
+proactive ping when something is due, to be built later; record the integration details here when
+it lands. Until then, open a session every several days to stay on the curve.
 
 ## Review log
 | Date | Themes reviewed | Grade → q | EF/interval change |
 |---|---|---|---|
-| 2026-06-17 | Q2 isolation & MVCC (entry, stage-5 cold quiz) | 55 → q2 | EF 2.50→2.18, reps 0, interval 2, due 2026-06-19 |

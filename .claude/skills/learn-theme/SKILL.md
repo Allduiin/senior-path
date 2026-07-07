@@ -35,14 +35,19 @@ the current phase's top open gap in `progress-log.md`).
      `docs/knowledge-base/<phase>/<slug>.md` (mechanism-first, table-heavy, made for re-reading);
      create the per-phase subfolder note on first use; flip the status in the KB index.
    - **Stage 3 — Exercise (RED):** invoke **`/next-exercise`** for this theme. That skill
-     scaffolds, registers, verifies RED-by-design, and updates both indexes. Do not duplicate its
-     work here.
+     scaffolds, registers, verifies RED-by-design, and updates the indexes. Do not duplicate its
+     work here. **Arcs:** if the theme belongs to a multi-theme arc or the phase capstone
+     (`docs/learning-flow.md` → Multi-theme arcs), target the shared module instead of a new
+     isolated one — each theme still gets its own stages 0–2 and its own score.
    - **Stage 4 — Solve (GREEN): HAND OFF AND STOP.** Print the run command and what "done" looks
      like. The user implements the fix. **Never solve it** (solutions only to gitignored
      `/solutions/` on the explicit phrase "show me the solution", hints first). Resuming
      `/learn-theme` after GREEN continues at stage 5.
    - **Stage 5 — Review:** when the user reports GREEN, review the diff + the SPEC Analysis,
-     mark the exercise **REVIEWED** in the `CLAUDE.md` index, score the Q in `progress-log.md`.
+     mark the exercise **REVIEWED** in the `CLAUDE.md` index, score the Q in
+     `knowledge-map.md` (single owner of scores). **ANALYSIS GATE: if the SPEC Analysis is
+     unfilled, the status stays GREEN (Analysis owed) — never REVIEWED.** The written
+     mechanism-and-tradeoffs record is part of solving, not optional.
    - **Stage 6 — Enter retention:** once the theme is taught **and** has a KB note, add its row to
      `docs/spaced-review.md` (EF 2.50, reps 0, due +7 d). This is the 2→6 gate — enforce it.
    - **Stage 7 / 8** are recurring and out of scope for a single run: point the user to
@@ -54,7 +59,7 @@ the current phase's top open gap in `progress-log.md`).
    to name the theme's current stage and the next action (mentor rule 5).
 
 4. **Commit** at meaningful boundaries with the AI-attribution trailer (HEREDOC,
-   `Co-Authored-By: Claude Opus 4.8`):
+   `Co-Authored-By:` naming the current model):
    - after teach + KB note: `docs(kb): <theme> note (Q<n>) + flow advance`
    - exercise scaffolding is committed by `/next-exercise` itself
    - after review: `chore(progress): <date> <theme> reviewed (Q<n> → <score>)`

@@ -27,10 +27,19 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
   subfolder note the first time a theme is taught.
 - `CLAUDE.md` — these operating rules.
 
+**One owner per fact (anti-drift rule).** Every fact lives in exactly ONE file; the others
+point to it, never restate it:
+- **Per-question scores & status** → `docs/knowledge-map.md` (only place numbers move).
+- **Exercise status (RED/GREEN/REVIEWED)** → the Exercise index in this file.
+- **SM-2 state (EF/reps/intervals)** → `docs/spaced-review.md`.
+- **Pillar levels, phase status, session history, weak-spot priorities** → `docs/progress-log.md`
+  (weak spots name the *gap*, not the score — scores are looked up in the knowledge map).
+
 ### Start-of-session ritual
 Read `docs/roadmap.md` + `docs/progress-log.md`, state the current phase and the open gaps,
 **scan `docs/spaced-review.md` and surface any theme due/overdue for review** (`next_due ≤ today`),
-propose today's focus, then teach/quiz or design/check exercises.
+**check `progress-log.md` → Meta → "Next due" and surface an overdue deep re-assessment** (offer
+`/assess`), propose today's focus, then teach/quiz or design/check exercises.
 
 ---
 
@@ -99,6 +108,17 @@ register in `settings.gradle.kts` → verify it COMPILES and is **RED by design*
 failure, not a compile/infra error) → update the index below **and** `docs/progress-log.md` →
 print the run command and what "done" looks like. Never ship the fix.
 
+**ANALYSIS GATE:** an exercise is never marked **REVIEWED** while its SPEC *Analysis* section
+is unfilled. The written Analysis is part of stage 4 (solve) — it trains articulation, the
+senior skill. GREEN + empty Analysis stays **GREEN (Analysis owed)** until the write-up lands.
+
+**Multi-theme arcs & phase capstones:** tightly coupled themes (e.g. Q6+Q7+Q8: dual-write →
+outbox → at-least-once → idempotent consumer) may share ONE exercise arc — each theme still gets
+its own teach + KB note + score, but stages 3–5 run once against a shared module. Each phase ends
+with the **capstone project** defined in `docs/roadmap.md` (tracked in the progress-log phase
+tracker "Project done" column); it travels stages 3–5 like an exercise, targeting all of the
+phase's Qs.
+
 ## RE-ASSESSMENT
 Two cadences, two skills:
 - **`/repeat-knowledge`** — lightweight per-theme retention (SM-2); see SPACED REVIEW above.
@@ -110,10 +130,13 @@ Two cadences, two skills:
 ---
 
 ## Exercise index
+> Fresh start 2026-07-07: both pilot exercises reverted to their RED scaffolds for re-issue
+> (pilot solutions archived in git history).
+
 | Exercise | Phase | Targets | Created | Status | Run |
 |---|:--:|:--:|:--:|---|---|
-| [p1-01-tx-self-invocation](exercises/p1-01-tx-self-invocation/SPEC.md) | 1 | Q1 | 2026-06-14 | REVIEWED (Q1→80, 2026-06-16) | `./gradlew :p1-01-tx-self-invocation:test` |
-| [p1-02-lost-update](exercises/p1-02-lost-update/SPEC.md) | 1 | Q2 | 2026-06-17 | REVIEWED (Q2→55, 2026-06-17) | `./gradlew :p1-02-lost-update:test` |
+| [p1-01-tx-self-invocation](exercises/p1-01-tx-self-invocation/SPEC.md) | 1 | Q1 | 2026-06-14 | RED (re-issued 2026-07-07) | `./gradlew :p1-01-tx-self-invocation:test` |
+| [p1-02-lost-update](exercises/p1-02-lost-update/SPEC.md) | 1 | Q2 | 2026-06-17 | RED (re-issued 2026-07-07) | `./gradlew :p1-02-lost-update:test` |
 
 > Status legend: **RED** = issued, tests fail by design · **GREEN** = I made it pass ·
-> **REVIEWED** = passed and discussed with mentor.
+> **REVIEWED** = passed, discussed with mentor, **and** SPEC Analysis filled (see ANALYSIS GATE).
