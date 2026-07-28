@@ -20,6 +20,9 @@
     --series-2: #eb6834;       /* orange — reviews */
     --series-3: #1baf7a;       /* aqua — tasks */
     --seq-150: #b7d3f6;        /* light step of blue ramp (rail track) */
+    /* categorical slots (validated adjacent order) — pillar identity */
+    --cat-1: #2a78d6; --cat-2: #eb6834; --cat-3: #1baf7a; --cat-4: #eda100;
+    --cat-5: #e87ba4; --cat-6: #008300; --cat-7: #4a3aa7; --cat-8: #e34948;
     --status-good: #0ca30c;
     --status-warning: #fab219;
     --status-critical: #d03b3b;
@@ -42,6 +45,8 @@
       --series-2: #d95926;
       --series-3: #199e70;
       --seq-150: #184f95;
+      --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500;
+      --cat-5: #d55181; --cat-6: #008300; --cat-7: #9085e9; --cat-8: #e66767;
       --delta-good: #0ca30c;
     }
   }
@@ -59,6 +64,8 @@
     --series-2: #d95926;
     --series-3: #199e70;
     --seq-150: #184f95;
+    --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500;
+    --cat-5: #d55181; --cat-6: #008300; --cat-7: #9085e9; --cat-8: #e66767;
     --delta-good: #0ca30c;
   }
 
@@ -90,7 +97,9 @@
   button.ghost:hover { border-color: var(--baseline); color: var(--text-primary); }
 
   /* ============ hero — the road to senior ============ */
-  .hero { padding: 30px 0 26px; border-bottom: 1px solid var(--grid); margin-bottom: 20px; }
+  .hero { padding: 22px 0 26px; border-bottom: 1px solid var(--grid); margin-bottom: 20px; }
+  .spectrum { display: flex; height: 5px; border-radius: 3px; overflow: hidden; gap: 2px; margin-bottom: 20px; }
+  .spectrum span { flex: 1; }
   .hero .hero-vrow { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
   .hero .hero-value { font: 600 52px/1 var(--mono); letter-spacing: -0.03em; }
   .hero .hero-delta { font: 13px var(--mono); color: var(--delta-good); }
@@ -102,7 +111,8 @@
   .rail { position: relative; height: 10px; border-radius: 5px; background: var(--seq-150); overflow: visible; }
   .rail .rail-fill {
     position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-    background: var(--series-1); border-radius: 5px 4px 4px 5px;
+    background: linear-gradient(90deg, var(--seq-150), var(--series-1));
+    border-radius: 5px 4px 4px 5px;
     transition: width 700ms cubic-bezier(.22,.8,.36,1);
   }
   .rail .rail-tick { position: absolute; top: -5px; width: 2px; height: 20px; background: var(--baseline); box-shadow: 0 0 0 2px var(--page); }
@@ -135,7 +145,12 @@
   .card .card-head .spacer { flex: 1; }
   .card .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
 
-  /* stat tiles */
+  /* stat tiles — colored top accents */
+  .kpis .tile { border-top: 3px solid var(--cat-1); }
+  .kpis .tile:nth-child(1) { border-top-color: var(--cat-7); }
+  .kpis .tile:nth-child(2) { border-top-color: var(--cat-2); }
+  .kpis .tile:nth-child(3) { border-top-color: var(--cat-3); }
+  .kpis .tile:nth-child(4) { border-top-color: var(--cat-4); }
   .tile .label { font-size: 12.5px; color: var(--text-secondary); }
   .tile .value { font: 600 27px/1.15 var(--mono); letter-spacing: -0.02em; margin-top: 6px; }
   .tile .meta  { font: 11.5px var(--mono); color: var(--muted); margin-top: 6px; }
@@ -459,6 +474,17 @@ function el(tag, cls, text) {
 }
 const fmt1 = (v) => String(Math.round(v * 10) / 10);
 
+/* pillar → categorical slot: color follows the entity across every card.
+   Order matters — first matching rule wins. */
+const PILLAR_RULES = [
+  [/distributed/i, 1], [/concurrency/i, 2], [/jvm|lang|internals/i, 3], [/persistence/i, 4],
+  [/system/i, 5], [/resilien|obs/i, 6], [/domain|payment/i, 7], [/spring|currency/i, 8],
+];
+const PILLAR_SHORT = { 1: "Distributed", 2: "Concurrency", 3: "JVM", 4: "Persistence",
+  5: "System design", 6: "Resilience", 7: "Domain", 8: "Spring/Kotlin" };
+const pillarSlot = (name) => { for (const [re, s] of PILLAR_RULES) if (re.test(name)) return s; return 1; };
+const catColor = (s) => "var(--cat-" + s + ")";
+
 function card(title, source, tableBuilder) {
   const c = el("section", "card");
   const head = el("div", "card-head");
@@ -505,6 +531,10 @@ function animateWidth(node, pct) {
 /* ---------------- hero: the road to senior ---------------- */
 function renderHero(M) {
   const hero = el("section", "hero");
+  const spec = el("div", "spectrum");
+  spec.title = "the 8 pillars";
+  for (let i = 1; i <= 8; i++) { const s = el("span"); s.style.background = catColor(i); spec.appendChild(s); }
+  hero.appendChild(spec);
   hero.appendChild(el("div", "eyebrow", "operative mean · Q1–Q12 · " + (M.latestCol || "")));
 
   const vrow = el("div", "hero-vrow");
@@ -623,6 +653,7 @@ function barBlock(items, opts) {
       track.appendChild(gl);
     }
     const bar = el("div", "bar");
+    if (it.color) bar.style.background = it.color;
     animateWidth(bar, Math.max(0, (it.value / max) * 100));
     track.appendChild(bar);
     if (it.prior !== null && it.prior !== undefined) {
@@ -662,11 +693,12 @@ function renderScores(M) {
   const items = M.questions.map((q) => {
     const latest = q.scores[M.latestCol].last ?? 0;
     const prior = q.scores[M.priorCol].first;
+    const color = catColor(pillarSlot(q.pillar));
     return {
-      label: q.topic, labelStrong: q.q,
+      label: q.topic, labelStrong: q.q, color,
       value: latest, prior, valueText: String(latest),
       tooltip: (e) => ttShow(e, q.q + " — " + q.topic, [
-        { color: "var(--series-1)", value: String(latest), label: "latest (" + M.latestCol + ")" },
+        { color, value: String(latest), label: "latest (" + M.latestCol + ")" },
         ...(prior !== null ? [{ color: "var(--muted)", value: String(prior), label: "pilot cold prior" }] : []),
         { value: q.status, label: "status · " + q.pillar },
       ]),
@@ -677,6 +709,18 @@ function renderScores(M) {
     dataTable(["Q", "Topic", "Pillar", "Pilot prior", "Latest", "Status"],
       M.questions.map((q) => [q.q, q.topic, q.pillar,
         q.scores[M.priorCol].first ?? "—", q.scores[M.latestCol].last ?? "—", q.status])));
+  const legend = el("div", "legendrow");
+  const seen = new Set();
+  for (const q of M.questions) {
+    const s = pillarSlot(q.pillar);
+    if (seen.has(s)) continue;
+    seen.add(s);
+    const lg = el("span", "lg");
+    const d = el("span", "dot"); d.style.background = catColor(s);
+    lg.appendChild(d); lg.appendChild(el("span", null, PILLAR_SHORT[s]));
+    legend.appendChild(lg);
+  }
+  body.appendChild(legend);
   body.appendChild(barBlock(items, {
     max: 100, grid: [0, 50, 80, 100], axis: [0, 50, 100],
     targetLine: 80, targetLineLabel: "80 · gap closes",
@@ -688,9 +732,9 @@ function renderScores(M) {
 function renderPillars(M) {
   const items = M.pillars.map((p) => ({
     label: p.name, value: p.level ?? 0, target: p.target,
-    valueText: p.levelText,
+    valueText: p.levelText, color: catColor(pillarSlot(p.name)),
     tooltip: (e) => ttShow(e, p.name, [
-      { color: "var(--series-1)", value: p.levelText, label: "current" },
+      { color: catColor(pillarSlot(p.name)), value: p.levelText, label: "current" },
       { color: "var(--muted)", value: p.targetText, label: "target (◆)" },
       ...(p.notes ? [{ value: "", label: p.notes }] : []),
     ]),
@@ -874,8 +918,8 @@ function renderWeakSpots(M) {
 /* ---------------- theme toggle ---------------- */
 (function themeInit() {
   const btn = document.getElementById("themeBtn");
-  const states = ["auto", "light", "dark"];
-  let cur = localStorage.getItem("sp-theme") || "auto";
+  const states = ["light", "dark", "auto"];
+  let cur = localStorage.getItem("sp-theme") || "light";
   const apply = () => {
     if (cur === "auto") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", cur);
