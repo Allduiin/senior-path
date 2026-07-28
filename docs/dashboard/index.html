@@ -100,12 +100,16 @@
   .hero { padding: 22px 0 26px; border-bottom: 1px solid var(--grid); margin-bottom: 20px; }
   .spectrum { display: flex; height: 5px; border-radius: 3px; overflow: hidden; gap: 2px; margin-bottom: 20px; }
   .spectrum span { flex: 1; }
-  .hero .hero-vrow { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
-  .hero .hero-value { font: 600 52px/1 var(--mono); letter-spacing: -0.03em; }
-  .hero .hero-delta { font: 13px var(--mono); color: var(--delta-good); }
-  .hero .hero-delta.flat { color: var(--muted); }
-  .hero .hero-phase { font: 12.5px var(--mono); color: var(--text-secondary); margin-left: auto; text-align: right; }
-  .hero .hero-phase b { color: var(--text-primary); font-weight: 600; }
+  .hero .hero-vrow { display: flex; align-items: center; gap: 38px; flex-wrap: wrap; margin-top: 16px; }
+  .ring-block { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .ring-block .ring-cap { font: 11px var(--mono); color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; }
+  .ring-val { font-family: var(--mono); font-weight: 600; fill: var(--text-primary); letter-spacing: -0.02em; }
+  .ring-fg { transition: stroke-dasharray 700ms cubic-bezier(.22,.8,.36,1); }
+  .hero-side { margin-left: auto; text-align: right; display: flex; flex-direction: column; gap: 8px; }
+  .hero-side .hero-delta { font: 13px var(--mono); color: var(--delta-good); }
+  .hero-side .hero-delta.flat { color: var(--muted); }
+  .hero-side .hero-phase { font: 12.5px var(--mono); color: var(--text-secondary); max-width: 320px; }
+  .hero-side .hero-phase b { color: var(--text-primary); font-weight: 600; }
 
   .rail-wrap { position: relative; margin-top: 34px; }
   .rail { position: relative; height: 10px; border-radius: 5px; background: var(--seq-150); overflow: visible; }
@@ -128,7 +132,7 @@
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
   @media (max-width: 980px) {
     .grid2 { grid-template-columns: 1fr; }
-    .hero .hero-phase { margin-left: 0; text-align: left; }
+    .hero .hero-side { margin-left: 0; text-align: left; }
   }
 
   .card {
@@ -197,7 +201,7 @@
   .rowhit { position: absolute; inset: -3px 0; cursor: default; }
 
   @media (prefers-reduced-motion: reduce) {
-    .track .bar, .rail .rail-fill { transition: none; }
+    .track .bar, .rail .rail-fill, .ring-fg { transition: none; }
   }
 
   /* ============ svg line chart ============ */
@@ -528,6 +532,43 @@ function animateWidth(node, pct) {
   requestAnimationFrame(() => requestAnimationFrame(() => { node.style.width = pct + "%"; }));
 }
 
+/* ring gauge — circular meter with a value in the middle and an optional
+   threshold tick on the ring (same semantics as the rail: track = lighter
+   step of the fill's own ramp) */
+function ringGauge(size, value, max, color, track, centerText, tickAt) {
+  const ns = "http://www.w3.org/2000/svg";
+  const sw = Math.max(8, Math.round(size * 0.085));
+  const c = size / 2, r = (size - sw) / 2 - 3, C = 2 * Math.PI * r;
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("width", size); svg.setAttribute("height", size);
+  svg.setAttribute("viewBox", "0 0 " + size + " " + size);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", centerText + " of " + max);
+  const mk = (tag, attrs) => {
+    const n = document.createElementNS(ns, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    svg.appendChild(n); return n;
+  };
+  mk("circle", { cx: c, cy: c, r, fill: "none", stroke: track, "stroke-width": sw });
+  const frac = Math.max(0, Math.min(1, (value || 0) / max));
+  const fg = mk("circle", { cx: c, cy: c, r, fill: "none", stroke: color, "stroke-width": sw,
+    "stroke-linecap": "round", "stroke-dasharray": "0 " + C,
+    transform: "rotate(-90 " + c + " " + c + ")", class: "ring-fg" });
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    fg.setAttribute("stroke-dasharray", (frac * C) + " " + C)));
+  if (tickAt !== undefined) {
+    const a = (tickAt / max) * 2 * Math.PI - Math.PI / 2;
+    const r1 = r - sw / 2 - 2, r2 = r + sw / 2 + 2;
+    mk("line", { x1: c + r1 * Math.cos(a), y1: c + r1 * Math.sin(a),
+      x2: c + r2 * Math.cos(a), y2: c + r2 * Math.sin(a),
+      stroke: "var(--baseline)", "stroke-width": 2 });
+  }
+  const t = mk("text", { x: c, y: c, "text-anchor": "middle", "dominant-baseline": "central",
+    class: "ring-val", "font-size": Math.round(size * 0.21) });
+  t.textContent = centerText;
+  return svg;
+}
+
 /* ---------------- hero: the road to senior ---------------- */
 function renderHero(M) {
   const hero = el("section", "hero");
@@ -538,13 +579,37 @@ function renderHero(M) {
   hero.appendChild(el("div", "eyebrow", "operative mean · Q1–Q12 · " + (M.latestCol || "")));
 
   const vrow = el("div", "hero-vrow");
-  vrow.appendChild(el("span", "hero-value", M.meanLatest === null ? "—" : fmt1(M.meanLatest)));
+
+  /* ring 1 — overall mean on the road to the senior bar */
+  const b1 = el("div", "ring-block");
+  b1.appendChild(ringGauge(132, M.meanLatest ?? 0, 100, "var(--series-1)", "var(--seq-150)",
+    M.meanLatest === null ? "—" : fmt1(M.meanLatest), 80));
+  b1.appendChild(el("div", "ring-cap", "mean · senior at 80"));
+  vrow.appendChild(b1);
+
+  /* ring 2 — the in-progress phase's pillar, in its own color */
+  const cur = M.phases.find((p) => /progress/i.test(p.status));
+  if (cur) {
+    const slot = pillarSlot(cur.theme);
+    const vals = M.questions.filter((q) => pillarSlot(q.pillar) === slot)
+      .map((q) => q.scores[M.latestCol].last).filter((v) => v !== null && v !== undefined);
+    if (vals.length) {
+      const pm = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const color = catColor(slot);
+      const b2 = el("div", "ring-block");
+      b2.appendChild(ringGauge(112, pm, 100, color,
+        "color-mix(in srgb, " + color + " 20%, var(--page))", fmt1(pm), 80));
+      b2.appendChild(el("div", "ring-cap", "phase " + cur.phase + " · " + (PILLAR_SHORT[slot] || cur.theme)));
+      vrow.appendChild(b2);
+    }
+  }
+
+  const side = el("div", "hero-side");
   if (M.meanLatest !== null && M.meanPrior !== null) {
     const d = M.meanLatest - M.meanPrior;
-    vrow.appendChild(el("span", "hero-delta" + (d > 0 ? "" : " flat"),
+    side.appendChild(el("span", "hero-delta" + (d > 0 ? "" : " flat"),
       (d >= 0 ? "+" : "−") + fmt1(Math.abs(d)) + " vs pilot"));
   }
-  const cur = M.phases.find((p) => /progress/i.test(p.status));
   const phase = el("span", "hero-phase");
   if (cur) {
     phase.appendChild(el("b", null, "Phase " + cur.phase));
@@ -552,7 +617,8 @@ function renderHero(M) {
   } else {
     phase.textContent = M.phases.length ? "no phase in progress" : "";
   }
-  vrow.appendChild(phase);
+  side.appendChild(phase);
+  vrow.appendChild(side);
   hero.appendChild(vrow);
 
   const wrap = el("div", "rail-wrap");
