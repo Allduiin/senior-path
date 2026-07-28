@@ -6,7 +6,8 @@
 
 ## Meta
 <!-- viz:meta -->
-- **Start:** 2026-07-07 (**fresh start** — the 2026-06 pilot run is archived in git history)
+- **Start:** 2026-07-28 (**fresh start** — day of the operative baseline; lab overhaul was
+  2026-07-07, the 2026-06 pilot run is archived in git history)
 - **Target:** Senior Java/Kotlin Backend Engineer
 - **Horizon:** ~18 mo (front-loaded) — adjust to actual hours
 - **Hours/week:** 6–10 (roadmap baseline)
