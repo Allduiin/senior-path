@@ -919,12 +919,13 @@ function renderWeakSpots(M) {
 (function themeInit() {
   const btn = document.getElementById("themeBtn");
   const states = ["light", "dark", "auto"];
-  let cur = localStorage.getItem("sp-theme") || "light";
+  /* key v2: v1 auto-persisted "auto" on first load, which would defeat the light default */
+  let cur = localStorage.getItem("sp-theme-2") || "light";
   const apply = () => {
     if (cur === "auto") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", cur);
     btn.textContent = "theme: " + cur;
-    localStorage.setItem("sp-theme", cur);
+    localStorage.setItem("sp-theme-2", cur);
   };
   btn.addEventListener("click", () => { cur = states[(states.indexOf(cur) + 1) % states.length]; apply(); });
   apply();
