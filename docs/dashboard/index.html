@@ -502,13 +502,13 @@ function card(title, source, tableBuilder) {
   if (tableBuilder) {
     const btn = el("button", "ghost", "table");
     btn.type = "button"; btn.setAttribute("aria-pressed", "false");
-    let tbl = null, chart = null;
+    let tbl = null;
     btn.addEventListener("click", () => {
       const showTable = btn.getAttribute("aria-pressed") === "false";
-      if (showTable && !tbl) { tbl = tableBuilder(); tbl.style.display = "none"; body.appendChild(tbl); }
-      if (!chart) chart = body.firstElementChild;
-      chart.style.display = showTable ? "none" : "";
-      if (tbl) tbl.style.display = showTable ? "" : "none";
+      if (showTable && !tbl) { tbl = tableBuilder(); body.appendChild(tbl); }
+      for (const child of body.children) {
+        child.style.display = (child === tbl) === showTable ? "" : "none";
+      }
       btn.setAttribute("aria-pressed", String(showTable));
       btn.textContent = showTable ? "chart" : "table";
     });
