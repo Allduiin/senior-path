@@ -5,6 +5,7 @@
 > (exercise index — single owner), `spaced-review.md` (retention).
 
 ## Meta
+<!-- viz:meta -->
 - **Start:** 2026-07-07 (**fresh start** — the 2026-06 pilot run is archived in git history)
 - **Target:** Senior Java/Kotlin Backend Engineer
 - **Horizon:** ~18 mo (front-loaded) — adjust to actual hours
@@ -20,6 +21,7 @@ Levels recalibrated from the **2026-07-28 fresh baseline** (scores in `knowledge
 Mapping: pillar cell-mean < 40 → L2 · 40–59 → L3 · 60–79 → L4 · 80–89 → L5 · 90+ → L6;
 single-cell pillars capped at L3 (low confidence) until a second cell lands.
 
+<!-- viz:pillars -->
 | Pillar | Baseline 2026-07-28 | Target | Notes |
 |---|:--:|:--:|---|
 | Distributed systems & tx correctness | L2 (mean ≈ 19) | L5 | Top priority. Q1=50 only partial cell; Q6/Q7/Q8 ≈ blank — outbox/idempotency/delivery vocabulary absent |
@@ -32,6 +34,7 @@ single-cell pillars capped at L3 (low confidence) until a second cell lands.
 | Spring/Kotlin currency | L3 (prior, untested) | L4 | Carried; Q1 partial evidence only |
 
 ## Phase tracker
+<!-- viz:phases -->
 | Phase | Theme | Status | Start | End | Project done | Re-test |
 |---|---|:--:|:--:|:--:|:--:|:--:|
 | 1 | Distributed & tx correctness | **in progress** | 2026-07-28 | | ☐ | |
@@ -45,6 +48,7 @@ single-cell pillars capped at L3 (low confidence) until a second cell lands.
 the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept there as prior.
 
 ## Completed tasks / projects
+<!-- viz:tasks -->
 | Date | What | Artifact / module |
 |---|---|---|
 | 2026-07-07 | **Lab overhauled + fresh start.** One-owner-per-fact doc rule; Analysis gate; multi-theme arcs & phase capstones defined; Q13+ convention; reading log added; skills updated; p1-01 & p1-02 reverted to RED scaffolds for re-issue; pilot run (2026-06-14→17) archived in git history | whole repo |
@@ -55,6 +59,7 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 per-date in Completed tasks; scores in `knowledge-map.md`.
 
 ## Open weak spots (priority top-down)
+<!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
 1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** dual-write problem & outbox pattern unknown (Q6);
    idempotent consumption — key, same-DB dedup table, atomic check+side-effect (Q7); delivery

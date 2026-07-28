@@ -26,6 +26,11 @@ Claude also **owns `docs/progress-log.md`** and keeps it accurate.
   table-heavy, made for spaced re-reading) and update the index status. Create a per-phase
   subfolder note the first time a theme is taught.
 - `CLAUDE.md` — these operating rules.
+- `docs/dashboard/index.html` — **derived view, owns no facts.** A browser dashboard that
+  parses the docs above live via `<!-- viz:* -->` anchor comments (in `knowledge-map.md`,
+  `progress-log.md`, `spaced-review.md`). Keep those anchors in place when editing the
+  tables they precede; nothing else to maintain — serve with `.\dashboard.ps1` and it always
+  reflects the current docs.
 
 **One owner per fact (anti-drift rule).** Every fact lives in exactly ONE file; the others
 point to it, never restate it:

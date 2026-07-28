@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senior Path — Progress</title>
+<style>
+  /* ============ palette & chrome (validated dataviz reference palette) ============ */
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;      /* card / chart surface */
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;       /* blue  — scores / trend */
+    --series-2: #eb6834;       /* orange — reviews */
+    --series-3: #1baf7a;       /* aqua — tasks */
+    --seq-150: #b7d3f6;        /* light step of blue ramp (rail track) */
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-critical: #d03b3b;
+    --delta-good: #006300;
+    --mono: "JetBrains Mono", "Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, monospace;
+    --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --seq-150: #184f95;
+      --delta-good: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --seq-150: #184f95;
+    --delta-good: #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--text-primary);
+    font: 14px/1.5 var(--sans);
+    padding: 26px clamp(16px, 4vw, 52px) 72px;
+  }
+  :focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
+
+  .eyebrow {
+    font: 11px/1 var(--mono);
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  header.page { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  header.page h1 { font-size: 19px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  header.page .spacer { flex: 1; }
+  header.page .sub { font: 11.5px var(--mono); color: var(--muted); }
+  button.ghost {
+    background: none; border: 1px solid var(--border); border-radius: 7px;
+    color: var(--text-secondary); font: 11.5px var(--mono);
+    padding: 5px 11px; cursor: pointer;
+  }
+  button.ghost:hover { border-color: var(--baseline); color: var(--text-primary); }
+
+  /* ============ hero — the road to senior ============ */
+  .hero { padding: 30px 0 26px; border-bottom: 1px solid var(--grid); margin-bottom: 20px; }
+  .hero .hero-vrow { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .hero .hero-value { font: 600 52px/1 var(--mono); letter-spacing: -0.03em; }
+  .hero .hero-delta { font: 13px var(--mono); color: var(--delta-good); }
+  .hero .hero-delta.flat { color: var(--muted); }
+  .hero .hero-phase { font: 12.5px var(--mono); color: var(--text-secondary); margin-left: auto; text-align: right; }
+  .hero .hero-phase b { color: var(--text-primary); font-weight: 600; }
+
+  .rail-wrap { position: relative; margin-top: 34px; }
+  .rail { position: relative; height: 10px; border-radius: 5px; background: var(--seq-150); overflow: visible; }
+  .rail .rail-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: var(--series-1); border-radius: 5px 4px 4px 5px;
+    transition: width 700ms cubic-bezier(.22,.8,.36,1);
+  }
+  .rail .rail-tick { position: absolute; top: -5px; width: 2px; height: 20px; background: var(--baseline); box-shadow: 0 0 0 2px var(--page); }
+  .rail .rail-ghost { position: absolute; top: -3px; width: 2px; height: 16px; background: var(--muted); box-shadow: 0 0 0 2px var(--page); }
+  .rail-lbl { position: absolute; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+  .rail-lbl.above { bottom: calc(100% + 9px); }
+  .rail-lbl.below { top: calc(100% + 8px); }
+  .rail-lbl.edge-r { transform: translateX(-100%); }
+  .rail-pad-b { height: 26px; }
+
+  /* ============ layout ============ */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 980px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .hero .hero-phase { margin-left: 0; text-align: left; }
+  }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px 20px;
+    min-width: 0;
+  }
+  .card .card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+  .card .card-head .titles { min-width: 0; }
+  .card h2 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 3px; }
+  .card .src { font: 10.5px var(--mono); color: var(--muted); letter-spacing: 0.02em; }
+  .card .card-head .spacer { flex: 1; }
+  .card .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+  /* stat tiles */
+  .tile .label { font-size: 12.5px; color: var(--text-secondary); }
+  .tile .value { font: 600 27px/1.15 var(--mono); letter-spacing: -0.02em; margin-top: 6px; }
+  .tile .meta  { font: 11.5px var(--mono); color: var(--muted); margin-top: 6px; }
+  .tile .status-line { display: inline-flex; align-items: center; gap: 6px; font: 12px var(--mono); margin-top: 6px; color: var(--text-secondary); }
+  .tile .status-line .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+  /* status chips — icon + label, never color alone */
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+          border-radius: 999px; padding: 3px 10px; font: 11.5px var(--mono); color: var(--text-secondary); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface-1); }
+
+  /* ============ HTML bar charts ============ */
+  .barchart { display: grid; grid-template-columns: minmax(150px, 220px) 1fr 52px; row-gap: 7px; align-items: center; }
+  .barchart .blabel { font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; }
+  .barchart .blabel b { color: var(--text-primary); font: 600 12px var(--mono); }
+  .barchart .bval { font: 11.5px var(--mono); color: var(--text-secondary); text-align: left; padding-left: 8px; }
+  .track { position: relative; height: 26px; }
+  .track .bar {
+    position: absolute; left: 0; top: 4px; height: 18px; width: 0;
+    background: var(--series-1);
+    border-radius: 0 4px 4px 0;   /* rounded data-end, square baseline */
+    transition: width 600ms cubic-bezier(.22,.8,.36,1);
+  }
+  .track .tick {           /* prior (pilot) marker */
+    position: absolute; top: 2px; width: 2px; height: 22px;
+    background: var(--muted); box-shadow: 0 0 0 2px var(--surface-1);
+  }
+  .track .tmark {          /* target marker (pillars) */
+    position: absolute; top: 50%; width: 9px; height: 9px;
+    background: var(--muted); transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 0 2px var(--surface-1);
+  }
+  .plot-rel { position: relative; }
+  .gridline-v { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+  .gridline-v.target { background: var(--baseline); }
+  .axis-row, .target-cap { display: grid; grid-template-columns: minmax(150px, 220px) 1fr 52px; }
+  .axis-row { margin-top: 8px; }
+  .target-cap { margin-bottom: 6px; }
+  .axis-row .ax { position: relative; height: 16px; }
+  .axis-row .ax span { position: absolute; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted); }
+  .target-cap .ax { position: relative; height: 14px; }
+  .target-cap .ax span { position: absolute; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+
+  .rowhit { position: absolute; inset: -3px 0; cursor: default; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track .bar, .rail .rail-fill { transition: none; }
+  }
+
+  /* ============ svg line chart ============ */
+  .linechart svg { display: block; width: 100%; height: auto; }
+  .linechart text { font: 11px var(--mono); fill: var(--muted); }
+  .linechart .dl { font: 600 12px var(--mono); fill: var(--text-secondary); }
+
+  /* ============ tables ============ */
+  table.data { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  table.data th { text-align: left; color: var(--muted); font: 11px var(--mono); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--grid); padding: 5px 10px 5px 0; }
+  table.data td { border-bottom: 1px solid var(--grid); padding: 6px 10px 6px 0; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  table.data td:first-child { color: var(--text-primary); }
+  table.data tr:last-child td { border-bottom: none; }
+
+  /* ============ timeline ============ */
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { display: grid; grid-template-columns: 92px 14px 1fr; gap: 10px; padding: 7px 0; align-items: baseline; }
+  .timeline li + li { border-top: 1px solid var(--grid); }
+  .timeline .tdate { font: 11.5px var(--mono); color: var(--muted); }
+  .timeline .tkey { width: 8px; height: 8px; border-radius: 50%; align-self: center; box-shadow: 0 0 0 2px var(--surface-1); }
+  .timeline .tbody { font-size: 12.5px; color: var(--text-secondary); min-width: 0; }
+  .timeline .tbody b { color: var(--text-primary); font-weight: 600; }
+  .legendrow { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legendrow .lg { display: inline-flex; align-items: center; gap: 6px; font: 11.5px var(--mono); color: var(--text-secondary); }
+  .legendrow .lg .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ============ retention ============ */
+  .empty {
+    border: 1px dashed var(--baseline); border-radius: 8px;
+    padding: 22px; text-align: center; color: var(--muted); font-size: 13px;
+  }
+  .empty b { color: var(--text-secondary); font-weight: 600; }
+  .duetimeline { position: relative; height: 74px; margin: 18px 6px 4px; }
+  .duetimeline .axisline { position: absolute; left: 0; right: 0; top: 40px; height: 1px; background: var(--baseline); }
+  .duetimeline .today { position: absolute; top: 20px; height: 40px; width: 1px; background: var(--baseline); }
+  .duetimeline .today-lbl { position: absolute; top: 2px; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted); }
+  .duetimeline .ddot { position: absolute; top: 40px; width: 10px; height: 10px; border-radius: 50%;
+                       transform: translate(-50%, -50%); box-shadow: 0 0 0 2px var(--surface-1); cursor: default; }
+  .duetimeline .dlbl { position: absolute; top: 52px; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+  .chiprow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ============ tooltip ============ */
+  #tooltip {
+    position: fixed; z-index: 10; pointer-events: none; display: none;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.13); max-width: 320px;
+  }
+  #tooltip .tt-title { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  #tooltip .tt-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; padding: 1px 0; }
+  #tooltip .tt-row .key { width: 12px; height: 2px; flex: none; }
+  #tooltip .tt-row .v { font: 600 12px var(--mono); color: var(--text-primary); }
+  #tooltip .tt-row .k { color: var(--text-secondary); }
+
+  /* weak spots */
+  ol.weak { margin: 0; padding-left: 22px; }
+  ol.weak li { font-size: 12.5px; color: var(--text-secondary); padding: 4px 0; }
+  ol.weak li b { color: var(--text-primary); font-weight: 600; }
+  ol.weak li::marker { font: 600 11px var(--mono); color: var(--muted); }
+
+  /* error panel */
+  .errbox { border: 1px solid var(--status-critical); border-radius: 10px; padding: 20px 24px; background: var(--surface-1); max-width: 720px; }
+  .errbox h2 { margin: 0 0 8px; font-size: 15px; }
+  .errbox code { background: var(--page); border: 1px solid var(--grid); border-radius: 5px; padding: 2px 7px; font: 12px var(--mono); }
+  .errbox p { color: var(--text-secondary); font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="page">
+  <span class="eyebrow">~/IdeaProjects/senior-path</span>
+  <h1>Progress console</h1>
+  <span class="spacer"></span>
+  <span class="sub" id="asof"></span>
+  <button class="ghost" id="themeBtn" type="button">theme: auto</button>
+</header>
+
+<main id="app" aria-busy="true"><p style="color:var(--muted)">Loading docs…</p></main>
+<div id="tooltip" role="tooltip"></div>
+
+<script>
+"use strict";
+/* ================================================================
+   Derived view ONLY — every fact on this page is parsed at load
+   time from docs/*.md (single owners per CLAUDE.md). This file
+   stores no data.
+   ================================================================ */
+
+/* ---------------- md fetch + parse ---------------- */
+async function fetchDoc(path) {
+  const r = await fetch(path, { cache: "no-store" });
+  if (!r.ok) throw new Error(path + " → HTTP " + r.status);
+  return r.text();
+}
+
+function stripMd(s) {
+  return s.replace(/\*\*|__|`/g, "").replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").trim();
+}
+
+function afterAnchor(md, name) {
+  const i = md.indexOf("<!-- viz:" + name + " -->");
+  return i < 0 ? -1 : i;
+}
+
+/* first markdown table after anchor → {headers, rows:[[...]]} */
+function tableAfter(md, name) {
+  const start = afterAnchor(md, name);
+  if (start < 0) return null;
+  const lines = md.slice(start).split(/\r?\n/);
+  let i = 0;
+  while (i < lines.length && !/^\s*\|/.test(lines[i])) {
+    if (/^#{1,6}\s/.test(lines[i]) && i > 0) return null; // hit next section, no table
+    i++;
+  }
+  const tbl = [];
+  while (i < lines.length && /^\s*\|/.test(lines[i])) { tbl.push(lines[i]); i++; }
+  if (tbl.length < 2) return { headers: [], rows: [] };
+  const cells = (l) => l.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(stripMd);
+  const headers = cells(tbl[0]);
+  const rows = tbl.slice(2).map(cells).filter((r) => r.some((c) => c !== ""));
+  return { headers, rows };
+}
+
+/* list (numbered or bulleted, items may wrap) after anchor */
+function listAfter(md, name) {
+  const start = afterAnchor(md, name);
+  if (start < 0) return [];
+  const lines = md.slice(start).split(/\r?\n/);
+  const items = [];
+  let cur = null, started = false;
+  for (const raw of lines.slice(1)) {
+    if (/^#{1,6}\s/.test(raw)) break;
+    const m = raw.match(/^\s*(?:\d+\.|[-*])\s+(.*)$/);
+    if (m) { if (cur) items.push(cur); cur = m[1]; started = true; }
+    else if (started && /^\s{2,}\S/.test(raw) && cur) cur += " " + raw.trim();
+    else if (started && raw.trim() === "" && items.length) break;
+  }
+  if (cur) items.push(cur);
+  return items.map(stripMd);
+}
+
+const firstNum = (s) => { const m = String(s).match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
+const isoDate = (s) => { const m = String(s).match(/\d{4}-\d{2}-\d{2}/); return m ? m[0] : null; };
+const dayMs = 86400000;
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / dayMs); }
+
+/* ---------------- data model ---------------- */
+function buildModel(kmap, plog, srev) {
+  const M = {};
+
+  /* per-question matrix: Q | Topic | Pillar | <score cols…> | Status */
+  const qt = tableAfter(kmap, "questions");
+  const scoreCols = qt.headers.slice(3, -1);
+  M.scoreCols = scoreCols;
+  M.questions = qt.rows.map((r) => {
+    const scores = {};
+    scoreCols.forEach((c, i) => {
+      const cell = r[3 + i];
+      const parts = String(cell).split("→").map(firstNum).filter((v) => v !== null);
+      scores[c] = { first: parts.length ? parts[0] : null, last: parts.length ? parts[parts.length - 1] : null };
+    });
+    return { q: r[0], topic: r[1], pillar: r[2], scores, status: r[r.length - 1] };
+  });
+  const colMean = (col, which) => {
+    const vs = M.questions.map((q) => q.scores[col] && q.scores[col][which]).filter((v) => v !== null && v !== undefined);
+    return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null;
+  };
+  /* trend: one point per score column (pilot column uses its FIRST number = cold prior).
+     Drop a trailing column whose values duplicate the previous one (Latest mirrors
+     Baseline until the next re-test). */
+  M.trend = scoreCols.map((c, i) => ({
+    label: c.replace(/\s*\(.*?\)\s*/g, ""),
+    mean: colMean(c, i === 0 ? "first" : "last"),
+  }));
+  for (let i = M.trend.length - 1; i > 0; i--) {
+    const same = M.questions.every((q) => q.scores[scoreCols[i]].last === q.scores[scoreCols[i - 1]].last);
+    if (same) { M.trend[i - 1].label = M.trend[i - 1].label + " · latest"; M.trend.splice(i, 1); }
+  }
+  M.latestCol = scoreCols[scoreCols.length - 1];
+  M.priorCol = scoreCols[0];
+  M.meanLatest = colMean(M.latestCol, "last");
+  M.meanPrior = colMean(M.priorCol, "first");
+
+  M.retests = (tableAfter(kmap, "retest-log") || { rows: [] }).rows
+    .map((r) => ({ date: isoDate(r[0]), trigger: r[1], probed: r[2], notes: r[3] }));
+
+  /* meta bullets */
+  const metaItems = listAfter(plog, "meta");
+  const metaText = metaItems.join("\n");
+  M.meta = {
+    start: (metaText.match(/Start:\s*(\d{4}-\d{2}-\d{2})/) || [])[1] || null,
+    level: (metaText.match(/Current overall level:\s*([^\n(]+)/) || [])[1]?.trim() || null,
+    lastAssess: (metaText.match(/Last assessment:\s*(\d{4}-\d{2}-\d{2})/) || [])[1] || null,
+    nextAssess: (metaText.match(/Next due:\s*(\d{4}-\d{2}-\d{2})/) || [])[1] || null,
+    target: (metaText.match(/Target:\s*([^\n]+)/) || [])[1]?.trim() || null,
+  };
+
+  /* pillar levels: Pillar | current "L2 (mean ≈ 19)" | Target "L5" | Notes */
+  const pt = tableAfter(plog, "pillars");
+  M.pillars = pt.rows.map((r) => {
+    const lvlNums = (r[1].match(/L(\d)/g) || []).map((s) => +s.slice(1));
+    const tgtNums = (r[2].match(/L(\d)/g) || []).map((s) => +s.slice(1));
+    return {
+      name: r[0],
+      levelText: r[1].match(/L\d(?:–L?\d)?/) ? r[1].match(/L\d(?:–L?\d)?/)[0] : r[1],
+      level: lvlNums.length ? lvlNums.reduce((a, b) => a + b, 0) / lvlNums.length : null,
+      targetText: r[2],
+      target: tgtNums.length ? tgtNums.reduce((a, b) => a + b, 0) / tgtNums.length : null,
+      notes: r[3] || "",
+    };
+  });
+
+  /* phase tracker: Phase | Theme | Status | Start | End | Project done | Re-test */
+  M.phases = (tableAfter(plog, "phases") || { rows: [] }).rows
+    .map((r) => ({ phase: r[0], theme: r[1], status: r[2], start: r[3], end: r[4] }));
+
+  M.tasks = (tableAfter(plog, "tasks") || { rows: [] }).rows
+    .map((r) => ({ date: isoDate(r[0]), what: r[1], artifact: r[2] }));
+
+  M.weakSpots = listAfter(plog, "weak-spots").filter((s) => /Q\d|:/.test(s));
+
+  /* SM-2 ledger */
+  const lt = tableAfter(srev, "ledger") || { rows: [] };
+  M.ledger = lt.rows
+    .filter((r) => r.length >= 8 && r[0] && !/^Add a row/i.test(r[0]))
+    .map((r) => ({
+      theme: r[0], q: r[1], kb: r[2],
+      ef: firstNum(r[3]), reps: firstNum(r[4]), interval: firstNum(r[5]),
+      lastReviewed: isoDate(r[6]), nextDue: isoDate(r[7]), history: r[8] || "",
+    }));
+
+  M.reviews = (tableAfter(srev, "review-log") || { rows: [] }).rows
+    .map((r) => ({ date: isoDate(r[0]), themes: r[1], grade: r[2], change: r[3] }));
+
+  return M;
+}
+
+/* ---------------- tooltip ---------------- */
+const tt = document.getElementById("tooltip");
+function ttShow(evt, title, rows) {
+  tt.replaceChildren();
+  if (title) { const d = document.createElement("div"); d.className = "tt-title"; d.textContent = title; tt.appendChild(d); }
+  for (const r of rows) {
+    const row = document.createElement("div"); row.className = "tt-row";
+    if (r.color) { const k = document.createElement("span"); k.className = "key"; k.style.background = r.color; row.appendChild(k); }
+    const v = document.createElement("span"); v.className = "v"; v.textContent = r.value; row.appendChild(v);
+    const k2 = document.createElement("span"); k2.className = "k"; k2.textContent = r.label; row.appendChild(k2);
+    tt.appendChild(row);
+  }
+  tt.style.display = "block";
+  ttMove(evt);
+}
+function ttMove(evt) {
+  const pad = 14, w = tt.offsetWidth, h = tt.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+  if (y + h > innerHeight - 8) y = evt.clientY - h - pad;
+  tt.style.left = x + "px"; tt.style.top = y + "px";
+}
+function ttHide() { tt.style.display = "none"; }
+function hover(el, fn) {
+  el.addEventListener("pointerenter", (e) => fn(e));
+  el.addEventListener("pointermove", ttMove);
+  el.addEventListener("pointerleave", ttHide);
+  el.tabIndex = 0;
+  el.addEventListener("focus", () => fn({ clientX: el.getBoundingClientRect().right, clientY: el.getBoundingClientRect().top }));
+  el.addEventListener("blur", ttHide);
+}
+
+/* ---------------- small builders ---------------- */
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+const fmt1 = (v) => String(Math.round(v * 10) / 10);
+
+function card(title, source, tableBuilder) {
+  const c = el("section", "card");
+  const head = el("div", "card-head");
+  const titles = el("div", "titles");
+  titles.appendChild(el("h2", null, title));
+  if (source) titles.appendChild(el("div", "src", source));
+  head.appendChild(titles);
+  head.appendChild(el("span", "spacer"));
+  const body = el("div");
+  c.appendChild(head); c.appendChild(body);
+  if (tableBuilder) {
+    const btn = el("button", "ghost", "table");
+    btn.type = "button"; btn.setAttribute("aria-pressed", "false");
+    let tbl = null, chart = null;
+    btn.addEventListener("click", () => {
+      const showTable = btn.getAttribute("aria-pressed") === "false";
+      if (showTable && !tbl) { tbl = tableBuilder(); tbl.style.display = "none"; body.appendChild(tbl); }
+      if (!chart) chart = body.firstElementChild;
+      chart.style.display = showTable ? "none" : "";
+      if (tbl) tbl.style.display = showTable ? "" : "none";
+      btn.setAttribute("aria-pressed", String(showTable));
+      btn.textContent = showTable ? "chart" : "table";
+    });
+    head.appendChild(btn);
+  }
+  return { card: c, body };
+}
+function dataTable(headers, rows) {
+  const t = el("table", "data");
+  const thead = el("thead"), trh = el("tr");
+  headers.forEach((h) => trh.appendChild(el("th", null, h)));
+  thead.appendChild(trh); t.appendChild(thead);
+  const tb = el("tbody");
+  rows.forEach((r) => { const tr = el("tr"); r.forEach((c) => tr.appendChild(el("td", null, String(c)))); tb.appendChild(tr); });
+  t.appendChild(tb);
+  return t;
+}
+
+/* deferred width — lets the load transition play once */
+function animateWidth(node, pct) {
+  requestAnimationFrame(() => requestAnimationFrame(() => { node.style.width = pct + "%"; }));
+}
+
+/* ---------------- hero: the road to senior ---------------- */
+function renderHero(M) {
+  const hero = el("section", "hero");
+  hero.appendChild(el("div", "eyebrow", "operative mean · Q1–Q12 · " + (M.latestCol || "")));
+
+  const vrow = el("div", "hero-vrow");
+  vrow.appendChild(el("span", "hero-value", M.meanLatest === null ? "—" : fmt1(M.meanLatest)));
+  if (M.meanLatest !== null && M.meanPrior !== null) {
+    const d = M.meanLatest - M.meanPrior;
+    vrow.appendChild(el("span", "hero-delta" + (d > 0 ? "" : " flat"),
+      (d >= 0 ? "+" : "−") + fmt1(Math.abs(d)) + " vs pilot"));
+  }
+  const cur = M.phases.find((p) => /progress/i.test(p.status));
+  const phase = el("span", "hero-phase");
+  if (cur) {
+    phase.appendChild(el("b", null, "Phase " + cur.phase));
+    phase.appendChild(document.createTextNode(" — " + cur.theme + " · " + cur.status + (cur.start ? " since " + cur.start : "")));
+  } else {
+    phase.textContent = M.phases.length ? "no phase in progress" : "";
+  }
+  vrow.appendChild(phase);
+  hero.appendChild(vrow);
+
+  const wrap = el("div", "rail-wrap");
+  const rail = el("div", "rail");
+  rail.setAttribute("role", "img");
+  rail.setAttribute("aria-label", "Mean score " + (M.meanLatest === null ? "unknown" : fmt1(M.meanLatest)) + " of 100; senior bar at 80");
+  const fill = el("div", "rail-fill");
+  rail.appendChild(fill);
+
+  const tick80 = el("div", "rail-tick"); tick80.style.left = "calc(80% - 1px)";
+  rail.appendChild(tick80);
+  const l80 = el("div", "rail-lbl above", "80 · senior bar"); l80.style.left = "80%";
+  rail.appendChild(l80);
+  const l100 = el("div", "rail-lbl above edge-r", "100"); l100.style.left = "100%";
+  rail.appendChild(l100);
+  if (M.meanPrior !== null) {
+    const ghost = el("div", "rail-ghost"); ghost.style.left = "calc(" + M.meanPrior + "% - 1px)";
+    rail.appendChild(ghost);
+    const gl = el("div", "rail-lbl below", "pilot " + fmt1(M.meanPrior)); gl.style.left = M.meanPrior + "%";
+    rail.appendChild(gl);
+  }
+  wrap.appendChild(rail);
+  wrap.appendChild(el("div", "rail-pad-b"));
+  hero.appendChild(wrap);
+  if (M.meanLatest !== null) animateWidth(fill, M.meanLatest);
+  return hero;
+}
+
+/* ---------------- renderers ---------------- */
+function kpiTile(label, value, metaLine, extra) {
+  const t = el("section", "card tile");
+  t.appendChild(el("div", "label", label));
+  t.appendChild(el("div", "value", value));
+  if (extra) t.appendChild(extra);
+  if (metaLine) t.appendChild(el("div", "meta", metaLine));
+  return t;
+}
+function statusLine(color, text) {
+  const s = el("div", "status-line");
+  const dot = el("span", "dot"); dot.style.background = color;
+  s.appendChild(dot); s.appendChild(el("span", null, text));
+  return s;
+}
+
+function renderKpis(M, today) {
+  const wrap = el("div", "kpis");
+
+  wrap.appendChild(kpiTile("Current overall level", M.meta.level || "—",
+    M.meta.target ? "target: " + M.meta.target : null));
+
+  let assessVal = "—", assessMeta = null, assessExtra = null;
+  if (M.meta.nextAssess) {
+    const d = daysBetween(today, M.meta.nextAssess);
+    assessVal = d >= 0 ? "in " + d + " d" : Math.abs(d) + " d over";
+    assessMeta = "due " + M.meta.nextAssess + (M.meta.lastAssess ? " · last " + M.meta.lastAssess : "");
+    if (d < 0) assessExtra = statusLine("var(--status-critical)", "⚠ overdue — run /assess");
+  }
+  wrap.appendChild(kpiTile("Next deep re-assessment", assessVal, assessMeta, assessExtra));
+
+  const due = M.ledger.filter((l) => l.nextDue && l.nextDue <= today);
+  const val = M.ledger.length === 0 ? "0" : String(due.length);
+  const meta = M.ledger.length === 0 ? "ledger empty — themes enter after teach + KB note"
+    : "of " + M.ledger.length + " theme" + (M.ledger.length === 1 ? "" : "s") + " in the ledger";
+  const extra = due.length > 0 ? statusLine("var(--status-warning)", "● due — run /repeat-knowledge") : null;
+  wrap.appendChild(kpiTile("Retention reviews due", val, meta, extra));
+
+  const started = M.meta.start ? daysBetween(M.meta.start, today) : null;
+  wrap.appendChild(kpiTile("On the path", started === null ? "—" : started + " d",
+    (M.meta.start ? "since " + M.meta.start : null)));
+  return wrap;
+}
+
+/* horizontal bar block used by Q-scores and pillars */
+function barBlock(items, opts) {
+  const max = opts.max, wrap = el("div");
+  if (opts.targetLine) {
+    const capRow = el("div", "target-cap");
+    capRow.appendChild(el("span"));
+    const capAx = el("div", "ax");
+    const s = el("span", null, opts.targetLineLabel);
+    s.style.left = (opts.targetLine / max) * 100 + "%";
+    capAx.appendChild(s);
+    capRow.appendChild(capAx); capRow.appendChild(el("span"));
+    wrap.appendChild(capRow);
+  }
+
+  const chart = el("div", "barchart plot-rel");
+  for (const it of items) {
+    const lbl = el("div", "blabel");
+    if (it.labelStrong) { const b = el("b", null, it.labelStrong); lbl.appendChild(b); lbl.appendChild(document.createTextNode(" · " + it.label)); }
+    else lbl.textContent = it.label;
+    lbl.title = (it.labelStrong ? it.labelStrong + " · " : "") + it.label;
+
+    const track = el("div", "track plot-rel");
+    for (const g of opts.grid) {
+      const gl = el("div", "gridline-v" + (g === opts.targetLine ? " target" : ""));
+      gl.style.left = (g / max) * 100 + "%";
+      track.appendChild(gl);
+    }
+    const bar = el("div", "bar");
+    animateWidth(bar, Math.max(0, (it.value / max) * 100));
+    track.appendChild(bar);
+    if (it.prior !== null && it.prior !== undefined) {
+      const tick = el("div", "tick");
+      tick.style.left = "calc(" + (it.prior / max) * 100 + "% - 1px)";
+      track.appendChild(tick);
+    }
+    if (it.target !== null && it.target !== undefined) {
+      const tm = el("div", "tmark");
+      tm.style.left = (it.target / max) * 100 + "%";
+      track.appendChild(tm);
+    }
+    const hit = el("div", "rowhit");
+    hover(hit, it.tooltip);
+    track.appendChild(hit);
+
+    chart.appendChild(lbl);
+    chart.appendChild(track);
+    chart.appendChild(el("div", "bval", it.valueText));
+  }
+  wrap.appendChild(chart);
+
+  const ax = el("div", "axis-row");
+  ax.appendChild(el("span"));
+  const axc = el("div", "ax");
+  for (const g of opts.axis) {
+    const s = el("span", null, opts.axisFmt ? opts.axisFmt(g) : String(g));
+    s.style.left = (g / max) * 100 + "%";
+    axc.appendChild(s);
+  }
+  ax.appendChild(axc); ax.appendChild(el("span"));
+  wrap.appendChild(ax);
+  return wrap;
+}
+
+function renderScores(M) {
+  const items = M.questions.map((q) => {
+    const latest = q.scores[M.latestCol].last ?? 0;
+    const prior = q.scores[M.priorCol].first;
+    return {
+      label: q.topic, labelStrong: q.q,
+      value: latest, prior, valueText: String(latest),
+      tooltip: (e) => ttShow(e, q.q + " — " + q.topic, [
+        { color: "var(--series-1)", value: String(latest), label: "latest (" + M.latestCol + ")" },
+        ...(prior !== null ? [{ color: "var(--muted)", value: String(prior), label: "pilot cold prior" }] : []),
+        { value: q.status, label: "status · " + q.pillar },
+      ]),
+    };
+  });
+  const { card: c, body } = card("Q1–Q12 scores — latest vs pilot prior (tick)",
+    "docs/knowledge-map.md · viz:questions", () =>
+    dataTable(["Q", "Topic", "Pillar", "Pilot prior", "Latest", "Status"],
+      M.questions.map((q) => [q.q, q.topic, q.pillar,
+        q.scores[M.priorCol].first ?? "—", q.scores[M.latestCol].last ?? "—", q.status])));
+  body.appendChild(barBlock(items, {
+    max: 100, grid: [0, 50, 80, 100], axis: [0, 50, 100],
+    targetLine: 80, targetLineLabel: "80 · gap closes",
+  }));
+  body.appendChild(el("p", "hint", "Rubric: 40 instinct · 70 mechanism + tradeoff · 90+ cold with tradeoffs. Muted tick = June pilot cold score."));
+  return c;
+}
+
+function renderPillars(M) {
+  const items = M.pillars.map((p) => ({
+    label: p.name, value: p.level ?? 0, target: p.target,
+    valueText: p.levelText,
+    tooltip: (e) => ttShow(e, p.name, [
+      { color: "var(--series-1)", value: p.levelText, label: "current" },
+      { color: "var(--muted)", value: p.targetText, label: "target (◆)" },
+      ...(p.notes ? [{ value: "", label: p.notes }] : []),
+    ]),
+  }));
+  const { card: c, body } = card("Pillar levels — current vs target ◆",
+    "docs/progress-log.md · viz:pillars", () =>
+    dataTable(["Pillar", "Current", "Target", "Notes"],
+      M.pillars.map((p) => [p.name, p.levelText, p.targetText, p.notes])));
+  body.appendChild(barBlock(items, {
+    max: 6, grid: [1, 2, 3, 4, 5, 6], axis: [1, 2, 3, 4, 5, 6],
+    axisFmt: (g) => "L" + g,
+  }));
+  body.appendChild(el("p", "hint", "L1 novice · L3 confident mid · L5 senior · L6 staff. ◆ marks the roadmap target."));
+  return c;
+}
+
+function renderTrend(M) {
+  const pts = M.trend.filter((t) => t.mean !== null);
+  const { card: c, body } = card("Mean score across assessments",
+    "docs/knowledge-map.md · viz:questions", () =>
+    dataTable(["Assessment", "Mean (Q1–Q12)"], M.trend.map((t) => [t.label, t.mean === null ? "—" : fmt1(t.mean)])));
+  const W = 560, H = 220, padL = 34, padR = 90, padT = 18, padB = 34;
+  const x = (i) => padL + (pts.length === 1 ? (W - padL - padR) / 2 : (i * (W - padL - padR)) / (pts.length - 1));
+  const y = (v) => padT + (1 - v / 100) * (H - padT - padB);
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Line chart of mean diagnostic score per assessment");
+  const add = (tag, attrs, parent) => {
+    const n = document.createElementNS(ns, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    (parent || svg).appendChild(n); return n;
+  };
+  for (const gv of [0, 50, 100]) {
+    add("line", { x1: padL, x2: W - padR + 40, y1: y(gv), y2: y(gv), stroke: "var(--grid)", "stroke-width": 1 });
+    const t = add("text", { x: padL - 8, y: y(gv) + 4, "text-anchor": "end" }); t.textContent = String(gv);
+  }
+  add("line", { x1: padL, x2: W - padR + 40, y1: y(80), y2: y(80), stroke: "var(--baseline)", "stroke-width": 1 });
+  const tl = add("text", { x: W - padR + 44, y: y(80) + 4 }); tl.textContent = "80 · senior bar";
+  if (pts.length > 1) {
+    const d = pts.map((p, i) => (i ? "L" : "M") + x(i) + "," + y(p.mean)).join(" ");
+    add("path", { d, fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" });
+  }
+  pts.forEach((p, i) => {
+    add("circle", { cx: x(i), cy: y(p.mean), r: 6, fill: "var(--surface-1)" });          /* surface ring */
+    add("circle", { cx: x(i), cy: y(p.mean), r: 4, fill: "var(--series-1)" });
+    const t = add("text", { x: x(i), y: H - 12, "text-anchor": i === pts.length - 1 ? "end" : "middle" });
+    t.textContent = p.label;
+    if (i === pts.length - 1) {
+      const dl = add("text", { x: x(i) + 12, y: y(p.mean) + 4, class: "dl" });
+      dl.textContent = fmt1(p.mean);
+    }
+    const hit = add("circle", { cx: x(i), cy: y(p.mean), r: 16, fill: "transparent" });
+    hit.style.pointerEvents = "all";
+    hover(hit, (e) => ttShow(e, p.label, [{ color: "var(--series-1)", value: fmt1(p.mean), label: "mean of Q1–Q12" }]));
+  });
+  const lc = el("div", "linechart");
+  lc.appendChild(svg);
+  body.appendChild(lc);
+  body.appendChild(el("p", "hint", "One point per assessment column in the knowledge map; the pilot point is the June cold baseline."));
+  return c;
+}
+
+function renderRetention(M, today) {
+  const { card: c, body } = card("Retention — SM-2 ledger",
+    "docs/spaced-review.md · viz:ledger", M.ledger.length ? () =>
+    dataTable(["Theme", "Q", "EF", "reps", "interval (d)", "last reviewed", "next due"],
+      M.ledger.map((l) => [l.theme, l.q, l.ef ?? "—", l.reps ?? "—", l.interval ?? "—", l.lastReviewed ?? "—", l.nextDue ?? "—"])) : null);
+
+  if (!M.ledger.length) {
+    const e = el("div", "empty");
+    e.appendChild(el("div", null, "No themes in the retention ledger yet."));
+    const p = el("p");
+    p.append("A theme enters after it is ");
+    p.appendChild(el("b", null, "taught + has a KB note"));
+    p.append(" — then intervals march 7 d → ~18 d → ~45 d → months (SM-2).");
+    e.appendChild(p);
+    body.appendChild(e);
+    if (M.meta.nextAssess) body.appendChild(el("p", "hint", "Deep re-assessment is tracked separately — next due " + M.meta.nextAssess + "."));
+    return c;
+  }
+
+  const chips = el("div", "chiprow");
+  const buckets = [
+    { key: "overdue", icon: "⚠", color: "var(--status-critical)", test: (l) => l.nextDue < today },
+    { key: "due today", icon: "●", color: "var(--status-warning)", test: (l) => l.nextDue === today },
+    { key: "next 7 d", icon: "○", color: "var(--series-1)", test: (l) => l.nextDue > today && daysBetween(today, l.nextDue) <= 7 },
+    { key: "later", icon: "✓", color: "var(--muted)", test: (l) => daysBetween(today, l.nextDue) > 7 },
+  ];
+  for (const b of buckets) {
+    const n = M.ledger.filter((l) => l.nextDue && b.test(l)).length;
+    if (!n) continue;
+    const ch = el("span", "chip");
+    const dot = el("span", "dot"); dot.style.background = b.color;
+    ch.appendChild(dot); ch.appendChild(el("span", null, b.icon + " " + n + " " + b.key));
+    chips.appendChild(ch);
+  }
+  body.appendChild(chips);
+
+  /* due timeline: window today−7d … today+45d */
+  const t0 = new Date(today).getTime() - 7 * dayMs, t1 = new Date(today).getTime() + 45 * dayMs;
+  const tX = (d) => Math.min(100, Math.max(0, ((new Date(d).getTime() - t0) / (t1 - t0)) * 100));
+  const tlDiv = el("div", "duetimeline");
+  tlDiv.appendChild(el("div", "axisline"));
+  const todayLine = el("div", "today"); todayLine.style.left = tX(today) + "%";
+  const todayLbl = el("div", "today-lbl", "today"); todayLbl.style.left = tX(today) + "%";
+  tlDiv.appendChild(todayLine); tlDiv.appendChild(todayLbl);
+  for (const l of M.ledger) {
+    if (!l.nextDue) continue;
+    const dot = el("div", "ddot");
+    dot.style.left = tX(l.nextDue) + "%";
+    dot.style.background = l.nextDue < today ? "var(--status-critical)" : l.nextDue === today ? "var(--status-warning)" : "var(--series-1)";
+    hover(dot, (e) => ttShow(e, l.theme + " (" + l.q + ")", [
+      { value: l.nextDue, label: "next due" },
+      { value: "EF " + l.ef + " · reps " + l.reps + " · " + l.interval + " d", label: "SM-2 state" },
+    ]));
+    tlDiv.appendChild(dot);
+  }
+  body.appendChild(tlDiv);
+  body.appendChild(el("p", "hint", "Dots = next_due per theme (window −7 d … +45 d). ⚠ overdue · ● due today · ○ upcoming."));
+  return c;
+}
+
+function renderHistory(M) {
+  const { card: c, body } = card("Session & assessment history",
+    "knowledge-map · progress-log · spaced-review");
+  const events = [];
+  for (const r of M.retests) if (r.date) events.push({ date: r.date, color: "var(--series-1)", head: r.trigger, tail: r.probed ? "probed " + r.probed : "" });
+  for (const t of M.tasks) if (t.date) events.push({ date: t.date, color: "var(--series-3)", head: t.what, tail: t.artifact || "" });
+  for (const r of M.reviews) if (r.date) events.push({ date: r.date, color: "var(--series-2)", head: "Spaced review — " + r.themes, tail: r.grade || "" });
+  events.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  const legend = el("div", "legendrow");
+  for (const [color, name] of [["var(--series-1)", "assessments / re-tests"], ["var(--series-2)", "spaced reviews"], ["var(--series-3)", "work & milestones"]]) {
+    const lg = el("span", "lg");
+    const d = el("span", "dot"); d.style.background = color;
+    lg.appendChild(d); lg.appendChild(el("span", null, name));
+    legend.appendChild(lg);
+  }
+  body.appendChild(legend);
+
+  const ul = el("ul", "timeline");
+  for (const ev of events) {
+    const li = el("li");
+    li.appendChild(el("span", "tdate", ev.date));
+    const key = el("span", "tkey"); key.style.background = ev.color;
+    li.appendChild(key);
+    const bodyc = el("span", "tbody");
+    const headText = ev.head.length > 160 ? ev.head.slice(0, 157) + "…" : ev.head;
+    bodyc.appendChild(el("b", null, headText));
+    if (ev.tail) bodyc.appendChild(document.createTextNode(" — " + (ev.tail.length > 90 ? ev.tail.slice(0, 87) + "…" : ev.tail)));
+    if (ev.head.length > 160 || (ev.tail && ev.tail.length > 90)) li.title = ev.head + (ev.tail ? " — " + ev.tail : "");
+    li.appendChild(bodyc);
+    ul.appendChild(li);
+  }
+  if (!events.length) body.appendChild(el("div", "empty", "No dated events yet — they appear here as sessions land in the logs."));
+  else body.appendChild(ul);
+  return c;
+}
+
+function renderWeakSpots(M) {
+  const { card: c, body } = card("Top weak spots (priority order)",
+    "docs/progress-log.md · viz:weak-spots");
+  const ol = el("ol", "weak");
+  for (const w of M.weakSpots.slice(0, 5)) {
+    const li = el("li");
+    const colon = w.indexOf(":");
+    if (colon > 0 && colon < 90) {
+      li.appendChild(el("b", null, w.slice(0, colon)));
+      const rest = w.slice(colon + 1).trim();
+      li.appendChild(document.createTextNode(" — " + (rest.length > 140 ? rest.slice(0, 137) + "…" : rest)));
+    } else li.textContent = w.length > 180 ? w.slice(0, 177) + "…" : w;
+    ol.appendChild(li);
+  }
+  body.appendChild(ol);
+  if (M.weakSpots.length > 5) body.appendChild(el("p", "hint", "+" + (M.weakSpots.length - 5) + " more in progress-log.md"));
+  return c;
+}
+
+/* ---------------- theme toggle ---------------- */
+(function themeInit() {
+  const btn = document.getElementById("themeBtn");
+  const states = ["auto", "light", "dark"];
+  let cur = localStorage.getItem("sp-theme") || "auto";
+  const apply = () => {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "theme: " + cur;
+    localStorage.setItem("sp-theme", cur);
+  };
+  btn.addEventListener("click", () => { cur = states[(states.indexOf(cur) + 1) % states.length]; apply(); });
+  apply();
+})();
+
+/* ---------------- boot ---------------- */
+(async function boot() {
+  const app = document.getElementById("app");
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById("asof").textContent = "live · docs/*.md · " + today;
+
+  if (location.protocol === "file:") {
+    app.replaceChildren();
+    const e = el("div", "errbox");
+    e.appendChild(el("h2", null, "Serve the repo over HTTP to load the docs"));
+    const p1 = el("p"); p1.append("Browsers block fetch() from file:// pages. From the repo root run ");
+    p1.appendChild(el("code", null, ".\\dashboard.ps1"));
+    p1.append(" (or: ");
+    p1.appendChild(el("code", null, "jwebserver -d . -p 8010"));
+    p1.append(") and open http://localhost:8010/docs/dashboard/.");
+    e.appendChild(p1);
+    app.appendChild(e);
+    app.removeAttribute("aria-busy");
+    return;
+  }
+
+  try {
+    const [kmap, plog, srev] = await Promise.all([
+      fetchDoc("../knowledge-map.md"),
+      fetchDoc("../progress-log.md"),
+      fetchDoc("../spaced-review.md"),
+    ]);
+    const M = buildModel(kmap, plog, srev);
+
+    app.replaceChildren();
+    app.appendChild(renderHero(M));
+    app.appendChild(renderKpis(M, today));
+
+    const row1 = el("div", "grid2");
+    row1.appendChild(renderScores(M));
+    row1.appendChild(renderPillars(M));
+    app.appendChild(row1);
+
+    const row2 = el("div", "grid2");
+    row2.appendChild(renderRetention(M, today));
+    row2.appendChild(renderTrend(M));
+    app.appendChild(row2);
+
+    const row3 = el("div", "grid2");
+    row3.appendChild(renderHistory(M));
+    row3.appendChild(renderWeakSpots(M));
+    app.appendChild(row3);
+
+    app.removeAttribute("aria-busy");
+  } catch (err) {
+    app.replaceChildren();
+    const e = el("div", "errbox");
+    e.appendChild(el("h2", null, "Could not load the docs"));
+    e.appendChild(el("p", null, String(err && err.message ? err.message : err)));
+    const p2 = el("p");
+    p2.append("Make sure the server was started from the repo root: ");
+    p2.appendChild(el("code", null, ".\\dashboard.ps1"));
+    e.appendChild(p2);
+    app.appendChild(e);
+    app.removeAttribute("aria-busy");
+  }
+})();
+</script>
+</body>
+</html>

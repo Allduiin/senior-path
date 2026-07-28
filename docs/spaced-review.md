@@ -64,6 +64,7 @@ load stays small even at 30–50 themes; the budget only bites during ramp-up or
 > as they are re-taught with a KB note (EF 2.50, reps 0). Q1/Q2 KB notes already exist from the
 > pilot; those themes re-enter after their fresh teach/review, not automatically.
 
+<!-- viz:ledger -->
 | Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
 |---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
 
@@ -77,5 +78,6 @@ proactive ping when something is due, to be built later; record the integration 
 it lands. Until then, open a session every several days to stay on the curve.
 
 ## Review log
+<!-- viz:review-log -->
 | Date | Themes reviewed | Grade → q | EF/interval change |
 |---|---|---|---|
