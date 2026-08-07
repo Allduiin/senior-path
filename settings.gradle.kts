@@ -27,3 +27,4 @@ fun exercise(name: String) {
 
 exercise("p1-01-tx-self-invocation")
 exercise("p1-02-lost-update")
+exercise("p1-03-outbox-arc")

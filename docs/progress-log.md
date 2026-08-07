@@ -54,7 +54,8 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 |---|---|---|
 | 2026-07-07 | **Lab overhauled + fresh start.** One-owner-per-fact doc rule; Analysis gate; multi-theme arcs & phase capstones defined; Q13+ convention; reading log added; skills updated; p1-01 & p1-02 reverted to RED scaffolds for re-issue; pilot run (2026-06-14→17) archived in git history | whole repo |
 | 2026-07-28 | **Fresh baseline diagnostic** (Q1–Q12 cold via `/assess`). Mean ≈ 31; pillar levels recalibrated; Phase 1 opened. `/assess` calibration rules validated (sketch → v1, single-cell cap added) | docs + `/assess` skill |
-| 2026-08-07 | **Q6 taught + KB note** (`/learn-theme`, arc start): dual-write failure windows, 2PC rejection, outbox mechanism, polling-vs-CDC relay, sequence≠commit-order pitfall, at-least-once consequence. Entered spaced review (due 2026-08-14). Stages 1–2+6 done; arc exercise waits for Q7/Q8 teach | [knowledge-base/phase-1-distributed-tx/transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) |
+| 2026-08-07 | **Q6 taught + KB note** (`/learn-theme`, arc start): dual-write failure windows, 2PC rejection, outbox mechanism, polling-vs-CDC relay, sequence≠commit-order pitfall, at-least-once consequence. Entered spaced review (due 2026-08-14). Stages 1–2+6 done | [knowledge-base/phase-1-distributed-tx/transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) |
+| 2026-08-07 | **p1-03-outbox-arc scaffolded** (`/next-exercise`, arc stage A = Q6): payment capture with seeded dual-write (`TransactionTemplate` commit → `CrashPoint` → inline publish); crash test RED on assertion (`failures=1, errors=0`), happy-path + ghost-guard tests GREEN; Postgres + RabbitMQ Testcontainers. Stages B (Q7) / C (Q8) will extend the module | `exercises/p1-03-outbox-arc/` |
 
 ## Exercise tracker
 **Owner: the Exercise index in `CLAUDE.md`** (status + run commands). Solve details are logged
@@ -87,10 +88,11 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**Continue the Q6+Q7+Q8 arc: teach Q7 (idempotent consumption) → KB note, then Q8, then the
-shared arc exercise via `/next-exercise`.** Q6 is at stage 2+6 (taught 2026-08-07, KB note
-written, in retention, due 2026-08-14); its cold score moves at arc-exercise review. Open
+**User solves p1-03-outbox-arc stage A (Q6) — stage 4, hands-off for the mentor.** RED test:
+`crash between DB commit and publish must not lose the event`; done = GREEN via outbox row in
+the same tx + `@Scheduled` relay, plus the SPEC Analysis filled (ANALYSIS GATE). Open
 design-corner debt: user's answer to "where does the outbox sit in a PSP integration?" (posed
-2026-08-07, feeds Q9) — collect/discuss before Q7 teach. p1-01/p1-02 stay RED in the queue:
-Q1 (50) and Q2 (55) need re-teach + re-solve after the arc is underway — KB notes exist from
-the pilot, extend rather than rewrite.
+2026-08-07, feeds Q9). After GREEN + review: teach Q7 (idempotent consumption) → KB note →
+extend the arc module (stage B). Q6 is in retention (due 2026-08-14); its cold score moves at
+review. p1-01/p1-02 stay RED in the queue: Q1 (50) and Q2 (55) need re-teach + re-solve after
+the arc is underway — KB notes exist from the pilot, extend rather than rewrite.

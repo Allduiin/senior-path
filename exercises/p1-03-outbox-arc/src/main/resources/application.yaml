@@ -1,0 +1,11 @@
+# Production-side config. Tests supply Postgres + RabbitMQ via Testcontainers @ServiceConnection.
+spring:
+  application:
+    name: p1-03-outbox-arc
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true

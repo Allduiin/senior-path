@@ -1,0 +1,9 @@
+# Test config: ephemeral Testcontainers Postgres — let Hibernate create the schema
+# (including the outbox table you add as an @Entity in task 2).
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
