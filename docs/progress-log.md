@@ -54,6 +54,7 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 |---|---|---|
 | 2026-07-07 | **Lab overhauled + fresh start.** One-owner-per-fact doc rule; Analysis gate; multi-theme arcs & phase capstones defined; Q13+ convention; reading log added; skills updated; p1-01 & p1-02 reverted to RED scaffolds for re-issue; pilot run (2026-06-14→17) archived in git history | whole repo |
 | 2026-07-28 | **Fresh baseline diagnostic** (Q1–Q12 cold via `/assess`). Mean ≈ 31; pillar levels recalibrated; Phase 1 opened. `/assess` calibration rules validated (sketch → v1, single-cell cap added) | docs + `/assess` skill |
+| 2026-08-07 | **Q6 taught + KB note** (`/learn-theme`, arc start): dual-write failure windows, 2PC rejection, outbox mechanism, polling-vs-CDC relay, sequence≠commit-order pitfall, at-least-once consequence. Entered spaced review (due 2026-08-14). Stages 1–2+6 done; arc exercise waits for Q7/Q8 teach | [knowledge-base/phase-1-distributed-tx/transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) |
 
 ## Exercise tracker
 **Owner: the Exercise index in `CLAUDE.md`** (status + run commands). Solve details are logged
@@ -62,9 +63,10 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 ## Open weak spots (priority top-down)
 <!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
-1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** dual-write problem & outbox pattern unknown (Q6);
-   idempotent consumption — key, same-DB dedup table, atomic check+side-effect (Q7); delivery
-   semantics vocabulary — ack ordering, Two Generals, effectively-once composition (Q8).
+1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** Q6 theory taught 2026-08-07 (cold score pending —
+   moves at arc-exercise review); idempotent consumption — key, same-DB dedup table, atomic
+   check+side-effect (Q7, untaught); delivery semantics vocabulary — ack ordering, Two Generals,
+   effectively-once composition (Q8, untaught).
 2. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
    resource isolation; retry hazards in payments.
 3. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
@@ -85,9 +87,10 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**Start the Q6+Q7+Q8 arc via `/learn-theme` (begin with Q6 — transactional outbox).** The
-cluster scored 20/5/0 and is the top weak spot; run teach → KB note per theme, then the shared
-arc exercise (dual-write → outbox → idempotent consumer, per `learning-flow.md` → Multi-theme
-arcs). p1-01/p1-02 stay RED in the queue: Q1 (50) and Q2 (55) need their re-teach + re-solve
-after the arc is underway — KB notes exist from the pilot, extend rather than rewrite. Add the
-~10-min design corner (place the outbox in a PSP integration — feeds Q9).
+**Continue the Q6+Q7+Q8 arc: teach Q7 (idempotent consumption) → KB note, then Q8, then the
+shared arc exercise via `/next-exercise`.** Q6 is at stage 2+6 (taught 2026-08-07, KB note
+written, in retention, due 2026-08-14); its cold score moves at arc-exercise review. Open
+design-corner debt: user's answer to "where does the outbox sit in a PSP integration?" (posed
+2026-08-07, feeds Q9) — collect/discuss before Q7 teach. p1-01/p1-02 stay RED in the queue:
+Q1 (50) and Q2 (55) need re-teach + re-solve after the arc is underway — KB notes exist from
+the pilot, extend rather than rewrite.

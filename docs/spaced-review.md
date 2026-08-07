@@ -67,6 +67,7 @@ load stays small even at 30–50 themes; the budget only bites during ramp-up or
 <!-- viz:ledger -->
 | Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
 |---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
+| Transactional outbox & dual-write | Q6 | [transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) | 2.50 | 0 | 7 | — (taught 2026-08-07) | 2026-08-14 | entered 2026-08-07 |
 
 > Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
 > first successful review).
