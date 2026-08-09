@@ -88,11 +88,11 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**User solves p1-03-outbox-arc stage A (Q6) — stage 4, hands-off for the mentor.** RED test:
-`crash between DB commit and publish must not lose the event`; done = GREEN via outbox row in
-the same tx + `@Scheduled` relay, plus the SPEC Analysis filled (ANALYSIS GATE). Open
-design-corner debt: user's answer to "where does the outbox sit in a PSP integration?" (posed
-2026-08-07, feeds Q9). After GREEN + review: teach Q7 (idempotent consumption) → KB note →
-extend the arc module (stage B). Q6 is in retention (due 2026-08-14); its cold score moves at
-review. p1-01/p1-02 stay RED in the queue: Q1 (50) and Q2 (55) need re-teach + re-solve after
-the arc is underway — KB notes exist from the pilot, extend rather than rewrite.
+**Close p1-03 stage A review debt.** Tests GREEN 2026-08-09 (single-tx outbox write correct),
+but: (1) relay bug — `findAll()` without a `sentAt IS NULL` filter republishes every event
+every tick, forever (tests green by timing luck); (2) no ORDER BY; (3) `fixedRate = 5 s`
+violates the SPEC ≤ 1 s constraint; (4) nullable-everything `QueueEvent` + silent fallback
+defaults. Fix 1–3, fill the SPEC Analysis (ANALYSIS GATE — status stays GREEN (Analysis owed)),
+answer the design-corner question (owed since 2026-08-07), then cold quiz → Q6 score moves.
+After that: teach Q7 (idempotent consumption) → KB note → arc stage B. Q6 retention due
+2026-08-14. p1-01/p1-02 stay RED in the queue.

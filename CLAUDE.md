@@ -142,7 +142,7 @@ Two cadences, two skills:
 |---|:--:|:--:|:--:|---|---|
 | [p1-01-tx-self-invocation](exercises/p1-01-tx-self-invocation/SPEC.md) | 1 | Q1 | 2026-06-14 | RED (re-issued 2026-07-07) | `./gradlew :p1-01-tx-self-invocation:test` |
 | [p1-02-lost-update](exercises/p1-02-lost-update/SPEC.md) | 1 | Q2 | 2026-06-17 | RED (re-issued 2026-07-07) | `./gradlew :p1-02-lost-update:test` |
-| [p1-03-outbox-arc](exercises/p1-03-outbox-arc/SPEC.md) | 1 | Q6+Q7+Q8 (arc; stage A = Q6) | 2026-08-07 | RED | `./gradlew :p1-03-outbox-arc:test` |
+| [p1-03-outbox-arc](exercises/p1-03-outbox-arc/SPEC.md) | 1 | Q6+Q7+Q8 (arc; stage A = Q6) | 2026-08-07 | GREEN (Analysis owed) — stage A solved 2026-08-09; relay findings open | `./gradlew :p1-03-outbox-arc:test` |
 
 > Status legend: **RED** = issued, tests fail by design · **GREEN** = I made it pass ·
 > **REVIEWED** = passed, discussed with mentor, **and** SPEC Analysis filled (see ANALYSIS GATE).
