@@ -86,7 +86,23 @@ publishing inside the DB transaction.
 > non-fixes; your outbox schema and why; the relay's duplicate window ⇒ at-least-once ⇒ what
 > stage B must add; polling vs CDC; sequence-vs-commit-order pitfall and your query's defense._
 
-## Dual write problems
-- Lost event: when first write operation done and before or during second write operation was thrown any problem, second raw can be lost, so in our case with rabbit we will never notify psp about save payment
-- Ghost event: Problem that will be in case if we haven't able to save event to db(in case of exception), but rabbit did sent message to psp that payment was done
-## 
+### Dual write problems
+- Lost event: when the first write operation is done and before or during the second write operation was thrown any problem, the second raw can be lost, so in our case with rabbit we will never notify rabbit about save payment
+- Ghost event: Problem that will be in case if we haven't able to save event to db(in case of exception), but rabbit did send a message to queue that payment was done
+### Why the obvious fixes are fake
+Publish inside transaciton is handled by ghost test, mechanism is: Started transaction → published message → transaction problem → rolled back changes → a message is already published
+
+### My solution
+The solution is to create an outbox table for the event and save events at the same transaction as payment, and after that asynchronously handle this saved event
+and send them to the queue.
+- Payload must be authored at writing time for the reason event entity should have all information about what and how should be sent
+- Id is for correct ordering of events, so we will have no problems when newer events publish earlier than older one
+- exchange, routingKey, and message are required to send event
+- sentAt is a mark column to mark the event as sent and in the future ready to be deleted
+- Two saves must be in the same transaction for a reason, so if something wrong with db writes, all is rolled back, and in case if payment save we sure that event also saves and will be handled in the future, so we will have no problem in case one is saved and seconds have not been published
+## The relay's honest contract
+- If relay dies after publish operation, mark-sent will not mark and at the next check it will send one more time, so we guarantee at least one sent message, but it is not guaranteed that it always will be only one, o consumers must be ready for this and ignore subsequent messages
+## The tradeoffs you're carrying
+- The main trade of is paying by more complex decision to have better passability we also have two problems with this case first is fail tolerance what do if one of scheduled events does not work correctly, 
+So we have few ways 1: stop, 2: retries and after few retries mark this event unsent 3: skip for now and go throw next events to not block all
+- Also, we have tradeoff with multithreading and performance do we require processing at strict order, or we cannot guarantee order but do it faster using multithreading and optimization; also, in case of multiple instances we should use limits and batches and locks to not have problems with when two different instances are simultaneously trying to publish event

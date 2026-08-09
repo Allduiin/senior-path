@@ -14,7 +14,9 @@ class PaymentService(
     private val payments: PaymentRepository,
     private val events: EventRepository,
     private val tx: TransactionTemplate,
+    private val rabbit: rabbitTemplate,
     private val crashPoint: CrashPoint,
+    private val rabbitTemplate: RabbitTemplate,
 ) {
 
     // TODO(tasks 2+3, SPEC.md): commit point #2 below must become an outbox row + relay // allow: code-comment exercise skeleton TODO marker

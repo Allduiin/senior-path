@@ -56,6 +56,7 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 | 2026-07-28 | **Fresh baseline diagnostic** (Q1–Q12 cold via `/assess`). Mean ≈ 31; pillar levels recalibrated; Phase 1 opened. `/assess` calibration rules validated (sketch → v1, single-cell cap added) | docs + `/assess` skill |
 | 2026-08-07 | **Q6 taught + KB note** (`/learn-theme`, arc start): dual-write failure windows, 2PC rejection, outbox mechanism, polling-vs-CDC relay, sequence≠commit-order pitfall, at-least-once consequence. Entered spaced review (due 2026-08-14). Stages 1–2+6 done | [knowledge-base/phase-1-distributed-tx/transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) |
 | 2026-08-07 | **p1-03-outbox-arc scaffolded** (`/next-exercise`, arc stage A = Q6): payment capture with seeded dual-write (`TransactionTemplate` commit → `CrashPoint` → inline publish); crash test RED on assertion (`failures=1, errors=0`), happy-path + ghost-guard tests GREEN; Postgres + RabbitMQ Testcontainers. Stages B (Q7) / C (Q8) will extend the module | `exercises/p1-03-outbox-arc/` |
+| 2026-08-09 | **p1-03 stage A solved & REVIEWED** (Q6 20→70, see knowledge-map): user built same-tx outbox write + `@Scheduled` relay; review caught findAll-republish bug, ordering, interval — all fixed by user; Analysis written (RU/EN mix, accepted); design-corner debt paid (PSP call = third irreversible commit point); cold quiz 4 questions. User independently proposed and stress-tested 3 "simpler" alternatives (in-memory retry, fallback-row-on-error, publish-inside-tx) — each broken on process-death, strong learning signal | `exercises/p1-03-outbox-arc/`, SPEC Analysis |
 
 ## Exercise tracker
 **Owner: the Exercise index in `CLAUDE.md`** (status + run commands). Solve details are logged
@@ -64,10 +65,11 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 ## Open weak spots (priority top-down)
 <!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
-1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** Q6 theory taught 2026-08-07 (cold score pending —
-   moves at arc-exercise review); idempotent consumption — key, same-DB dedup table, atomic
-   check+side-effect (Q7, untaught); delivery semantics vocabulary — ack ordering, Two Generals,
-   effectively-once composition (Q8, untaught).
+1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** Q6 core closed at stage-A review 2026-08-09;
+   residual sub-gaps: publisher-confirms remaining window (confirms cover only the running
+   publish leg), sequence≠commit-order max-id-cursor skip. Q7 idempotent consumption — key,
+   same-DB dedup table, atomic check+side-effect (untaught, next). Q8 delivery semantics —
+   ack ordering, Two Generals, effectively-once composition (untaught).
 2. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
    resource isolation; retry hazards in payments.
 3. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
@@ -88,11 +90,10 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**Close p1-03 stage A review debt.** Tests GREEN 2026-08-09 (single-tx outbox write correct),
-but: (1) relay bug — `findAll()` without a `sentAt IS NULL` filter republishes every event
-every tick, forever (tests green by timing luck); (2) no ORDER BY; (3) `fixedRate = 5 s`
-violates the SPEC ≤ 1 s constraint; (4) nullable-everything `QueueEvent` + silent fallback
-defaults. Fix 1–3, fill the SPEC Analysis (ANALYSIS GATE — status stays GREEN (Analysis owed)),
-answer the design-corner question (owed since 2026-08-07), then cold quiz → Q6 score moves.
-After that: teach Q7 (idempotent consumption) → KB note → arc stage B. Q6 retention due
-2026-08-14. p1-01/p1-02 stay RED in the queue.
+**Teach Q7 (idempotent consumption) → KB note → arc stage B** (`/learn-theme Q7`): consumer
+side of the at-least-once pipeline p1-03 now produces — idempotency key (outbox event id),
+same-DB dedup table, atomic check+side-effect. Micro-debt: user appends 1–2 sentences on
+publisher confirms to the p1-03 Analysis (correction given at quiz). Q6 retention due
+2026-08-14 (`/repeat-knowledge`) — probe the two residual sub-gaps there. p1-01/p1-02 stay
+RED in the queue. Session pacing note 2026-08-09: user hit theory-fatigue mid-arc — prefer
+short teach blocks, RU allowed for write-ups, land terms on code he already wrote.
