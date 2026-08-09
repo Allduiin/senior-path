@@ -1,5 +1,6 @@
 package com.seniorpath.outbox
 
+import com.seniorpath.outbox.repository.PaymentRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test

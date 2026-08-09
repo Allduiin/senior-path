@@ -85,3 +85,8 @@ publishing inside the DB transaction.
 > _TODO: both dual-write windows + symptoms; why in-tx publish and publisher confirms are
 > non-fixes; your outbox schema and why; the relay's duplicate window ⇒ at-least-once ⇒ what
 > stage B must add; polling vs CDC; sequence-vs-commit-order pitfall and your query's defense._
+
+## Dual write problems
+- Lost event: when first write operation done and before or during second write operation was thrown any problem, second raw can be lost, so in our case with rabbit we will never notify psp about save payment
+- Ghost event: Problem that will be in case if we haven't able to save event to db(in case of exception), but rabbit did sent message to psp that payment was done
+## 

@@ -1,4 +1,4 @@
-package com.seniorpath.outbox
+package com.seniorpath.outbox.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
