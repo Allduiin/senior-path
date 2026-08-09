@@ -92,6 +92,11 @@ publishing inside the DB transaction.
 ### Why the obvious fixes are fake
 Publish inside transaciton is handled by ghost test, mechanism is: Started transaction → published message → transaction problem → rolled back changes → a message is already published
 
+Publisher confirms гарантируют получение брокером сообщения (подтверждение brokerа → publisher'у,
+покрывают ногу «сервис → брокер»), но не решают dual-write: не спасают ни когда транзакция
+откатилась после publish (ghost event), ни когда запись закоммитилась, а до publish дело не
+дошло — процесс умер, publish не начался, и подтверждать нечего (lost event).
+
 ### My solution
 The solution is to create an outbox table for the event and save events at the same transaction as payment, and after that asynchronously handle this saved event
 and send them to the queue.
