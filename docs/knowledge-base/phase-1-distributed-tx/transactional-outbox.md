@@ -1,6 +1,7 @@
 # Transactional outbox & the dual-write problem
 
-**Maps to:** Q6 (transactional outbox) · **Phase 1** · Exercise: shared Q6+Q7+Q8 arc module (pending)
+**Maps to:** Q6 (transactional outbox) · **Phase 1** · Exercise: shared Q6+Q7+Q8 arc module,
+stage A ✅ ([p1-03-outbox-arc](../../../exercises/p1-03-outbox-arc/SPEC.md))
 [← back to index](../README.md)
 
 ## TL;DR
