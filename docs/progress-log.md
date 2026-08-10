@@ -56,6 +56,8 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 | 2026-07-28 | **Fresh baseline diagnostic** (Q1–Q12 cold via `/assess`). Mean ≈ 31; pillar levels recalibrated; Phase 1 opened. `/assess` calibration rules validated (sketch → v1, single-cell cap added) | docs + `/assess` skill |
 | 2026-08-07 | **Q6 taught + KB note** (`/learn-theme`, arc start): dual-write failure windows, 2PC rejection, outbox mechanism, polling-vs-CDC relay, sequence≠commit-order pitfall, at-least-once consequence. Entered spaced review (due 2026-08-14). Stages 1–2+6 done | [knowledge-base/phase-1-distributed-tx/transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) |
 | 2026-08-07 | **p1-03-outbox-arc scaffolded** (`/next-exercise`, arc stage A = Q6): payment capture with seeded dual-write (`TransactionTemplate` commit → `CrashPoint` → inline publish); crash test RED on assertion (`failures=1, errors=0`), happy-path + ghost-guard tests GREEN; Postgres + RabbitMQ Testcontainers. Stages B (Q7) / C (Q8) will extend the module | `exercises/p1-03-outbox-arc/` |
+| 2026-08-10 | **Q7 taught + KB note** (`/learn-theme Q7`, arc stage B): why the consumer is the only place duplicates can be absorbed; producer-assigned key vs deliveryTag/business key; dedup store in the same DB; the check-then-act crash window (record-first ⇒ silent loss, effect-first ⇒ duplicate); `INSERT … ON CONFLICT DO NOTHING` as atomic claim; natural idempotency (guarded transition / upsert) vs relative accumulation; foreign side effects (PSP idempotency key, record-intent-before-call); ack-after-commit; per-consumer scope + retention bound. Entered spaced review (due 2026-08-17). Stages 1–2+6 done | [knowledge-base/phase-1-distributed-tx/idempotent-consumption.md](knowledge-base/phase-1-distributed-tx/idempotent-consumption.md) |
+| 2026-08-10 | **p1-03 arc stage B scaffolded** (`/next-exercise`, Q7): second queue `payment-captured-ledger` bound to the same routing key (stage-A tests undisturbed); append-only `payout_ledger` as the accumulative side effect (no unique-constraint shortcut); `PayoutLedgerConsumer` skeleton; `CrashPoint` extended with payload-discriminated arming + `AFTER_PUBLISH_BEFORE_MARK` (placed in the relay) and `AFTER_CLAIM_BEFORE_EFFECT` (user places it). 3 tests: single credit, republish ⇒ no double-credit, mid-handle crash ⇒ no lost credit. Also fixed stage A, which did not compile as committed (dead `rabbit: rabbitTemplate` param) | `exercises/p1-03-outbox-arc/` |
 | 2026-08-09 | **p1-03 stage A solved & REVIEWED** (Q6 20→70, see knowledge-map): user built same-tx outbox write + `@Scheduled` relay; review caught findAll-republish bug, ordering, interval — all fixed by user; Analysis written (RU/EN mix, accepted); design-corner debt paid (PSP call = third irreversible commit point); cold quiz 4 questions. User independently proposed and stress-tested 3 "simpler" alternatives (in-memory retry, fallback-row-on-error, publish-inside-tx) — each broken on process-death, strong learning signal | `exercises/p1-03-outbox-arc/`, SPEC Analysis |
 
 ## Exercise tracker
@@ -67,9 +69,11 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
 1. **Q6+Q7+Q8 cluster (the Phase 1 arc):** Q6 core closed at stage-A review 2026-08-09;
    residual sub-gaps: publisher-confirms remaining window (confirms cover only the running
-   publish leg), sequence≠commit-order max-id-cursor skip. Q7 idempotent consumption — key,
-   same-DB dedup table, atomic check+side-effect (untaught, next). Q8 delivery semantics —
-   ack ordering, Two Generals, effectively-once composition (untaught).
+   publish leg), sequence≠commit-order max-id-cursor skip. Q7 taught 2026-08-10 — score still
+   at baseline until stage B is solved and reviewed; the gap to close in code is the **atomic
+   claim + side effect in one local transaction** (and detecting "already claimed" without
+   `SELECT`-then-`INSERT`). Q8 delivery semantics — ack ordering, Two Generals, effectively-once
+   composition (untaught).
 2. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
    resource isolation; retry hazards in payments.
 3. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
@@ -90,10 +94,14 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**Teach Q7 (idempotent consumption) → KB note → arc stage B** (`/learn-theme Q7`): consumer
-side of the at-least-once pipeline p1-03 now produces — idempotency key (outbox event id),
-same-DB dedup table, atomic check+side-effect. Micro-debt: user appends 1–2 sentences on
-publisher confirms to the p1-03 Analysis (correction given at quiz). Q6 retention due
-2026-08-14 (`/repeat-knowledge`) — probe the two residual sub-gaps there. p1-01/p1-02 stay
-RED in the queue. Session pacing note 2026-08-09: user hit theory-fatigue mid-arc — prefer
-short teach blocks, RU allowed for write-ups, land terms on code he already wrote.
+**Q7 is at stage 4 — solve p1-03 arc stage B** (`./gradlew :p1-03-outbox-arc:test`, Docker
+required): idempotency key + same-DB dedup table + atomic claim and side effect in ONE local
+transaction; place `AFTER_CLAIM_BEFORE_EFFECT` between claim and credit; fill the stage-B
+Analysis (ANALYSIS GATE). Resume with `/learn-theme Q7` on GREEN → stage 5 review + Q7 score.
+**Open item:** stage B was scaffolded with Docker down — RED-by-assertion is not yet verified;
+run the suite first thing and confirm `failures>0, errors=0` before solving.
+Q6 retention due **2026-08-14** (`/repeat-knowledge`) — probe the two residual sub-gaps
+(confirms cover only the running publish leg; max-id-cursor skip). Q7 retention due 2026-08-17.
+Deep re-assessment due **2026-08-18** (`/assess`). p1-01/p1-02 stay RED in the queue.
+Session pacing note (2026-08-09, still active): short teach blocks, RU allowed for write-ups,
+land terms on code he already wrote.

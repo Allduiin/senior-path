@@ -21,4 +21,13 @@ class RabbitConfig {
         BindingBuilder.bind(paymentCapturedQueue())
             .to(paymentsExchange())
             .with(PaymentEvents.CAPTURED_ROUTING_KEY)
+
+    @Bean
+    fun payoutLedgerQueue(): Queue = Queue(PaymentEvents.LEDGER_QUEUE, true)
+
+    @Bean
+    fun payoutLedgerBinding(): Binding =
+        BindingBuilder.bind(payoutLedgerQueue())
+            .to(paymentsExchange())
+            .with(PaymentEvents.CAPTURED_ROUTING_KEY)
 }

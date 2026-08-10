@@ -1,9 +1,17 @@
-# p1-03 — The outbox arc, stage A: dual-write → transactional outbox
+# p1-03 — The outbox arc (Q6 → Q7 → Q8)
 
 | | |
 |---|---|
 | **Phase** | 1 — Distributed systems & transactional correctness |
-| **Targets diagnostic** | **Q6** now; the module is the shared **Q6+Q7+Q8 arc** — stage B (idempotent consumer, Q7) and stage C (delivery semantics, Q8) will extend it after their teach |
+| **Targets diagnostic** | Shared **Q6+Q7+Q8 arc**. **Stage A — Q6** (transactional outbox) ✅ REVIEWED 2026-08-09 · **Stage B — Q7** (idempotent consumer) ← current · **Stage C — Q8** (delivery semantics) pending its teach |
+| **Run** | `./gradlew :p1-03-outbox-arc:test` (Docker required) |
+
+---
+
+# Stage A — dual-write → transactional outbox (Q6) ✅
+
+| | |
+|---|---|
 | **Start state** | RED — the crash test fails by design |
 | **Done state** | GREEN — the event survives a crash between DB commit and publish |
 
@@ -81,7 +89,7 @@ publishing inside the DB transaction.
 
 ---
 
-## Analysis (you fill this in)
+## Analysis — stage A (filled in 2026-08-09)
 > _TODO: both dual-write windows + symptoms; why in-tx publish and publisher confirms are
 > non-fixes; your outbox schema and why; the relay's duplicate window ⇒ at-least-once ⇒ what
 > stage B must add; polling vs CDC; sequence-vs-commit-order pitfall and your query's defense._
@@ -111,3 +119,107 @@ and send them to the queue.
 - The main trade of is paying by more complex decision to have better passability we also have two problems with this case first is fail tolerance what do if one of scheduled events does not work correctly, 
 So we have few ways 1: stop, 2: retries and after few retries mark this event unsent 3: skip for now and go throw next events to not block all
 - Also, we have tradeoff with multithreading and performance do we require processing at strict order, or we cannot guarantee order but do it faster using multithreading and optimization; also, in case of multiple instances we should use limits and batches and locks to not have problems with when two different instances are simultaneously trying to publish event
+
+---
+
+# Stage B — the idempotent consumer (Q7)
+
+| | |
+|---|---|
+| **Targets diagnostic** | **Q7** — idempotent consumption (keys, dedup store, the failure window) |
+| **Start state** | RED — three tests in `IdempotentConsumerTest` fail by design |
+| **Done state** | GREEN — one captured payment produces exactly one payout credit, no matter how many times its event is delivered |
+
+## Objective
+Stage A made the producer side **at-least-once**: your relay publishes, then marks sent, and a
+crash between those two steps republishes the same event. Close the loop by building the
+**consumer** that absorbs those duplicates — a dedup claim and the side effect committed in **one
+local transaction**. KB note:
+[idempotent-consumption.md](../../docs/knowledge-base/phase-1-distributed-tx/idempotent-consumption.md).
+
+## Scenario
+A second queue, `payment-captured-ledger`, is bound to the same exchange and routing key as the
+stage-A queue (both queues get their own copy of every `payment.captured` event — the stage-A
+tests keep polling their queue undisturbed).
+
+Its consumer's job: **credit the merchant's payout ledger** with the captured amount by appending
+a `PayoutEntry` row. The ledger is **append-only and accumulative** — a real payout ledger holds
+many entries per order (capture, refund, fee), so `orderId` is *not* unique there and a unique
+constraint is not available to you as a shortcut. Two deliveries of one event ⇒ two rows ⇒ the
+merchant is paid twice. Dedup has to happen **before** the append.
+
+Provided for you: `PayoutEntry` (entity), `PayoutLedgerRepository`, the queue + binding in
+`RabbitConfig`, and a `PayoutLedgerConsumer` skeleton. Everything about **identity and dedup** is
+yours to design.
+
+Two crash points model the two failure modes:
+
+| Label | Where | Models |
+|---|---|---|
+| `AFTER_PUBLISH_BEFORE_MARK` | already placed in your relay, between publish and mark-sent | The relay dying mid-pass ⇒ the same event is **published twice** |
+| `AFTER_CLAIM_BEFORE_EFFECT` | **you place it** in the consumer, between claiming the key and crediting the ledger | The consumer dying mid-handle ⇒ does your claim survive a rollback it shouldn't? |
+
+## Tasks
+1. **Design the key (Analysis first).** The consumer needs an identifier that is **stable across
+   redeliveries** and assigned by the producer. Decide what it is and how it travels — a field in
+   the payload authored in the capture transaction, or an AMQP message property the relay sets
+   from the outbox row. Write down why the AMQP `deliveryTag` and the `orderId` are *not*
+   automatically the right answer here.
+2. **Dedup store.** Add a table (JPA `@Entity`, schema via `ddl-auto: create-drop`) that records
+   which keys this consumer has processed. It must live in **this** database. Claiming a key must
+   be a **single atomic statement**, not `SELECT`-then-`INSERT` — decide what enforces that and
+   how you detect "someone already owns this key".
+3. **The consumer.** Turn `PayoutLedgerConsumer.onPaymentCaptured` into a listener on
+   `PaymentEvents.LEDGER_QUEUE`. Claim the key and append the `PayoutEntry` **in one local
+   transaction**; on a duplicate, skip the credit and let the message be acknowledged. Parse the
+   payload with Jackson (`jackson-databind` is on the classpath).
+4. **Place the crash point.** `crashPoint.maybeCrash(CrashPoint.AFTER_CLAIM_BEFORE_EFFECT, payload)`
+   goes **after the claim, before the credit**. Decide consciously what must happen to the claim
+   when the exception unwinds.
+5. **Document (Analysis).** Your key and why; what your claim statement is and what makes it
+   atomic; the two orderings of claim/side-effect that fail and the symptom of each; where the ack
+   sits relative to your commit and which semantics that gives; what bounds the retention of the
+   dedup table; what changes when the side effect is a PSP call instead of a local row.
+
+## Acceptance criteria
+- `./gradlew :p1-03-outbox-arc:test` is GREEN — **both** test classes (stage A must not regress).
+- `captured payment is credited to the payout ledger exactly once` — one entry, right amount.
+- `a republished event must not double-credit the ledger` — the relay publishes the same event
+  twice; exactly one entry survives.
+- `a crash between claiming the key and crediting must not lose the credit` — the first attempt
+  dies mid-handle; the redelivery must still produce exactly one entry. **Zero entries means your
+  claim outlived a rolled-back side effect** — the silent-loss failure.
+- Correct for the right reason: an atomic claim + the side effect in one transaction. Not by
+  catching the crash, disabling the listener, or editing tests.
+
+## Constraints
+- Do not edit the tests.
+- Keep `crashPoint.maybeCrash(CrashPoint.AFTER_PUBLISH_BEFORE_MARK, it.message)` in the relay
+  between publish and mark-sent.
+- Do not put a unique constraint on `payout_ledger.orderId` and do not change `PayoutEntry` —
+  the ledger is append-only by design; that shortcut would dedup one specific side effect instead
+  of teaching the general mechanism.
+- No in-memory `Set`, no Redis, no broker-side dedup — the store is a table in this database.
+- Testcontainers Postgres + RabbitMQ only.
+- The plugin hook forbids code comments: reasoning goes in the Analysis below; tag any deliberate
+  comment with `// allow: code-comment <reason>`.
+
+## Stretch goals
+1. **Poison message + DLQ.** Bound redelivery attempts and route a permanently-failing message to
+   a dead-letter queue. In the Analysis: why the dedup key must **not** stay claimed for a message
+   that never succeeded, and how that interacts with your one-transaction rule.
+2. **Concurrent delivery.** Raise listener concurrency and reason (in the Analysis, or with a
+   scratch test) about two threads handling the same key at the same instant: which of them wins,
+   what the loser observes, and why a `SELECT`-then-`INSERT` claim would let both through.
+
+## How to run
+```
+./gradlew :p1-03-outbox-arc:test
+```
+(Docker must be running for Testcontainers.)
+
+## Analysis — stage B (you fill this in)
+> _TODO: your idempotency key and why (and why not `deliveryTag` / `orderId`); your claim
+> statement and what makes it atomic; both failing orderings of claim vs side effect + symptoms;
+> ack placement and the resulting semantics; dedup-table retention bound; what changes when the
+> side effect is a PSP call._

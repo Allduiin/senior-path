@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit
 class QueueTableHandler(
     private val rabbit: RabbitTemplate,
     private val events: EventRepository,
+    private val crashPoint: CrashPoint,
     ) {
 
 
@@ -20,6 +21,7 @@ class QueueTableHandler(
     fun handleEvents() {
         events.findUnsent().forEach {
             handleEvent(it)
+            crashPoint.maybeCrash(CrashPoint.AFTER_PUBLISH_BEFORE_MARK, it.message)
             markAsSent(it)
         }
     }
