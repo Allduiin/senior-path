@@ -223,3 +223,47 @@ Two crash points model the two failure modes:
 > statement and what makes it atomic; both failing orderings of claim vs side effect + symptoms;
 > ack placement and the resulting semantics; dedup-table retention bound; what changes when the
 > side effect is a PSP call._
+
+### The key
+- I took key as id of rabbit outbox table message event so it is unique for 
+every event that msut be sent by rabbit, orderId identifies an order not event, for one order we can have many events and it is okay with buisness logic
+- It is same for every duplication of sending so we can identidy the duplicate and if it wouldn't be we 
+would have two identical charges at ledger, it is because we set it as unique key in dedup table and setting it at adding event to outbox table
+- The dedup key is set to message_id of rabbit message and we took it at consumer side
+- Not a delivery tag because it will be unique for every message even with same payload and event id, so we will have two unique keys for same event and will be troubles with duplicates
+
+### The claim
+- We claiming the key by atomic db operation so we can be sure that the key is not claimed by other thread, and done once
+- The atomarity is achived by unique constraint on primary key of db
+- If key is not empty write and fluh operation with persitance always new will return us exception in case we already have key
+- Select-then-insert is not atomic operation because between them could be another insert of another thread or instance so we will have two identical charges at ledger
+
+### Claim vs side effect
+- Effect -> mark: money charged but not sent to cosumer, effect: duplication of charges
+- mark of self transaciton -> effect: mark exists and have no charges, duplication will cause 0 charges
+- mark and effect at same tranasction: only all on no one, so only 1 charge will be made
+
+### The ack
+- We are using rabbit mq so we are using ack from rabbit mq
+- We have semantic of at-least-once delivery, so consumer must be able to handle duplicate messages
+- In invert order at-most-once data can be not sent and lost 
+- Duplicate can be fixed by deduplication of messages, but if we have no any messages we cannot fix at all
+- ack sends the container in AcknowledgeMode.AUTO mode after the listener method returns normally, that is,
+after the tx.execute commit. Nothing happens in the window between the commit and the ack, and a failure 
+in this window results in a redelivery. The first bullet ("using RabbitMQ, therefore using RabbitMQ's ack")
+doesn't convey anything—such lines only add confusion to Analysis.
+
+### Retention of the dedup table
+- Time to live of dedup table enteties must be limited by time that can be needed for sending second duplicated message to consumer
+- If we delete it earlier, we will be able to have a case when the same message was duplicated and charged twice
+- This part is not done for now as it is test practice project that not require this thing with adding new process and schduling
+- We can add this part in the future if we will need it
+- In our case we can have relay that can sent message circulary and endlessly if we will have problems with handling it and will not correctly work with it
+
+### What changes when the side effect is a PSP call instead of a local row
+- If we use PSP db tranaction is not shared on it so it cannot be rolled back in case of problems, and success commit to key table do not guarantee
+that it was 100% successfully delivered to psp
+- I think there must be a process that gurantees has been delivered to psp and option to rollback it in case of problems for example by state model CREATED -> PENDING -> COMPLETED
+- With writes that are stuck must be checked status on psp side and after that update acordinaly, if there no event resend it, blind resend can lead to duplication on psp ide if it is not ready for it
+- Psp needs idenpotent key to be able to handle duplicate messages
+- Guarantees of message delivery and rollback are hard to achieve with external psp

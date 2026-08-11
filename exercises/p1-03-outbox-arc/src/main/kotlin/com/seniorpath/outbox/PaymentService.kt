@@ -1,9 +1,10 @@
 package com.seniorpath.outbox
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.seniorpath.outbox.entity.QueueEvent
 import com.seniorpath.outbox.entity.Payment
 import com.seniorpath.outbox.entity.PaymentStatus
-import com.seniorpath.outbox.repository.EventRepository
+import com.seniorpath.outbox.repository.QueueEventRepository
 import com.seniorpath.outbox.repository.PaymentRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -11,9 +12,10 @@ import org.springframework.transaction.support.TransactionTemplate
 @Service
 class PaymentService(
     private val payments: PaymentRepository,
-    private val events: EventRepository,
+    private val events: QueueEventRepository,
     private val tx: TransactionTemplate,
     private val crashPoint: CrashPoint,
+    private val mapper: ObjectMapper,
 ) {
 
     // TODO(tasks 2+3, SPEC.md): commit point #2 below must become an outbox row + relay // allow: code-comment exercise skeleton TODO marker
@@ -26,7 +28,7 @@ class PaymentService(
                 QueueEvent(
                     exchange = PaymentEvents.EXCHANGE,
                     routingKey = PaymentEvents.CAPTURED_ROUTING_KEY,
-                    message = capturedPayload(payment)
+                    message = mapper.writeValueAsString(payment.toEvent()),
                 )
             )
             return@execute payment
@@ -36,6 +38,9 @@ class PaymentService(
         return payment.id!!
     }
 
-    private fun capturedPayload(payment: Payment): String =
-        """{"paymentId":${payment.id},"orderId":"${payment.orderId}","amountMinor":${payment.amountMinor}}"""
+    private fun Payment.toEvent() = PaymentCapturedEvent(
+        paymentId = id!!,
+        orderId = orderId,
+        amountMinor = amountMinor,
+    )
 }
