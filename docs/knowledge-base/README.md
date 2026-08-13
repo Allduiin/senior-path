@@ -17,7 +17,7 @@ Status legend: ✅ written · ✍️ partial · ⬜ not yet written.
 | Isolation levels & MVCC | Q2 | ✅ | [phase-1-distributed-tx/isolation-levels-and-mvcc.md](phase-1-distributed-tx/isolation-levels-and-mvcc.md) |
 | Transactional outbox & the dual-write problem | Q6 | ✅ | [phase-1-distributed-tx/transactional-outbox.md](phase-1-distributed-tx/transactional-outbox.md) |
 | Idempotent consumption (keys, dedup, failure window) | Q7 | ✅ | [phase-1-distributed-tx/idempotent-consumption.md](phase-1-distributed-tx/idempotent-consumption.md) |
-| Delivery semantics & effectively-once | Q8 | ⬜ | _pending_ |
+| Delivery semantics & effectively-once | Q8 | ✅ | [phase-1-distributed-tx/delivery-semantics.md](phase-1-distributed-tx/delivery-semantics.md) |
 
 ## Phase 2 — Concurrency (JVM + Kotlin)
 | Theme | Maps to | Status | Note |
