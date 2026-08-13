@@ -38,5 +38,6 @@ class CrashPoint {
         const val AFTER_COMMIT_BEFORE_PUBLISH = "after-commit-before-publish"
         const val AFTER_PUBLISH_BEFORE_MARK = "after-publish-before-mark"
         const val AFTER_CLAIM_BEFORE_EFFECT = "after-claim-before-effect"
+        const val AFTER_CLAIM_BEFORE_NOTIFY = "after-claim-before-notify"
     }
 }

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Phase** | 1 — Distributed systems & transactional correctness |
-| **Targets diagnostic** | Shared **Q6+Q7+Q8 arc**. **Stage A — Q6** (transactional outbox) ✅ REVIEWED 2026-08-09 · **Stage B — Q7** (idempotent consumer) ← current · **Stage C — Q8** (delivery semantics) pending its teach |
+| **Targets diagnostic** | Shared **Q6+Q7+Q8 arc**. **Stage A — Q6** (transactional outbox) ✅ REVIEWED 2026-08-09 · **Stage B — Q7** (idempotent consumer) ✅ REVIEWED 2026-08-11 · **Stage C — Q8** (delivery semantics) ← current |
 | **Run** | `./gradlew :p1-03-outbox-arc:test` (Docker required) |
 
 ---
@@ -267,3 +267,96 @@ that it was 100% successfully delivered to psp
 - With writes that are stuck must be checked status on psp side and after that update acordinaly, if there no event resend it, blind resend can lead to duplication on psp ide if it is not ready for it
 - Psp needs idenpotent key to be able to handle duplicate messages
 - Guarantees of message delivery and rollback are hard to achieve with external psp
+---
+
+# Stage C — delivery semantics made observable (Q8)
+
+| | |
+|---|---|
+| **Targets diagnostic** | **Q8** — delivery semantics (the ack axis, Two Generals, effectively-once) |
+| **Start state** | RED — two of three tests in `DeliverySemanticsTest` fail by design |
+| **Done state** | GREEN — the notification survives a mid-handle crash AND a republished event, exactly one row either way |
+
+## Objective
+Stages A and B built the machine; stage C makes you **name what it is**. A third consumer ships
+**working but wrong**: it records a merchant notification for every captured payment, and it is
+wired to a listener container factory that acknowledges **before** the effect. Each failing test
+is one row of the semantics table. Fix it by *choosing* the semantics deliberately and paying
+their price. KB note:
+[delivery-semantics.md](../../docs/knowledge-base/phase-1-distributed-tx/delivery-semantics.md).
+
+## Scenario
+A third queue, `payment-captured-notify`, is bound to the same exchange and routing key (stages A
+and B keep their queues undisturbed). `MerchantNotificationConsumer` handles it: append a
+`NotificationLog` row per captured payment. It is **implemented** — no `TODO()` — and the happy
+path passes. But:
+
+- its listener uses `containerFactory = "fireAndForgetFactory"` (`RabbitConfig`), which sets
+  `AcknowledgeMode.NONE` — the broker treats a message as consumed **the moment it is
+  dispatched**;
+- the effect is a bare `save`, no dedup.
+
+Two tests expose the two windows:
+
+| Test | Arms | Exposes |
+|---|---|---|
+| `a consumer crash mid-handle must not lose the notification` | `AFTER_CLAIM_BEFORE_NOTIFY` | ack **before** effect ⇒ the crash consumes the message forever ⇒ **at-most-once, silent loss** |
+| `a republished event must not notify the merchant twice` | `AFTER_PUBLISH_BEFORE_MARK` (relay) | at-least-once transport without an idempotent effect ⇒ **duplicate** |
+
+## Tasks
+1. **Diagnose (Analysis first).** Run the tests. Map each failure to its row of the semantics
+   table: where does the ack sit in the seeded configuration, what is in the window, why is one
+   symptom a loss and the other a duplicate? Why is the loss the unfixable side?
+2. **Choose the semantics.** Reconfigure the listener so the ack follows the effect's commit.
+   Decide what to do with `fireAndForgetFactory` and defend the choice in the Analysis.
+3. **Make the effect effectively-once.** You built the composition in stage B — apply it here.
+   One deliberate wrinkle: the dedup store is now shared by **two consumers of the same event**
+   (the ledger consumer already claims the outbox id). Decide how the claim of *this* consumer
+   must differ so neither starves the other — you answered this in the stage-B quiz; now it is
+   code.
+4. **Keep the crash hook.** `crashPoint.maybeCrash(CrashPoint.AFTER_CLAIM_BEFORE_NOTIFY, payload)`
+   must end up **between your claim and the notification write**, inside the same transaction.
+5. **Document (Analysis).** The full write-up below.
+
+## Acceptance criteria
+- `./gradlew :p1-03-outbox-arc:test` is GREEN — **all three** test classes (stages A and B must
+  not regress).
+- `a consumer crash mid-handle must not lose the notification` — the first attempt dies
+  mid-handle; the redelivered message still produces exactly one row.
+- `a republished event must not notify the merchant twice` — two deliveries, one row.
+- Correct for the right reason: ack after the effect's commit + a scoped atomic claim in the same
+  transaction as the write. Not by catching the crash, not by editing tests, not by a unique
+  constraint on `notification_log`.
+
+## Constraints
+- Do not edit the tests.
+- Do not change `NotificationLog` and do not add unique constraints to `notification_log` —
+  same reasoning as stage B: the mechanism must be general, not a property of one table.
+- Keep `AFTER_PUBLISH_BEFORE_MARK` in the relay and `AFTER_CLAIM_BEFORE_NOTIFY` in this consumer.
+- The dedup store stays a table in this database.
+- Stage A and stage B tests and code keep working; the ledger consumer's claims must be
+  unaffected by yours.
+- The plugin hook forbids code comments: reasoning goes in the Analysis; tag any deliberate
+  comment with `// allow: code-comment <reason>`.
+
+## Stretch goals
+1. **Manual ack.** Reimplement the fixed consumer with `AcknowledgeMode.MANUAL` and an explicit
+   `channel.basicAck` — place it correctly, and note in the Analysis which window reopens if you
+   place it first.
+2. **Ablation matrix.** In the Analysis: remove each ingredient of the effectively-once
+   composition one at a time (stable key · atomic claim · shared transaction · ack-after-commit)
+   and name the test in this module that catches each removal.
+
+## How to run
+```
+./gradlew :p1-03-outbox-arc:test
+```
+(Docker must be running for Testcontainers.)
+
+## Analysis — stage C (you fill this in)
+> _TODO: each failing test mapped to its semantics row (where the ack sat, what was in the
+> window, why loss vs duplicate); why the loss side is unfixable and the duplicate side is;
+> where the ack sits after your fix and what that makes the pipeline end-to-end; how your claim
+> is scoped so two consumers of one event don't starve each other; what Kafka EOS would and
+> would not change about THIS module (which duplicate sources it removes, and why the
+> Postgres-bound effects keep needing the dedup)._

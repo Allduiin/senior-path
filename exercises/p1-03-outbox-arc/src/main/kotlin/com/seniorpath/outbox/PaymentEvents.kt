@@ -5,4 +5,5 @@ object PaymentEvents {
     const val CAPTURED_ROUTING_KEY = "payment.captured"
     const val CAPTURED_QUEUE = "payment-captured"
     const val LEDGER_QUEUE = "payment-captured-ledger"
+    const val NOTIFY_QUEUE = "payment-captured-notify"
 }
