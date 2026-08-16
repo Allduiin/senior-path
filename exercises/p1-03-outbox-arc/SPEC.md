@@ -360,3 +360,27 @@ Two tests expose the two windows:
 > is scoped so two consumers of one event don't starve each other; what Kafka EOS would and
 > would not change about THIS module (which duplicate sources it removes, and why the
 > Postgres-bound effects keep needing the dedup)._
+
+
+- If ack strategy is AcknowledgeMode.NONE then the producer will not retry to send message to consumer
+so in case of exception before saving info to db, notification will not be sent again and will be lost
+So with this strategy of ack it is at-most-once delivery and it is not possible to fix it from consumer side
+- If ack strategy is AcknowledgeMode.AUTO then the broker will retry to send message to consumer
+so we in case of exception before saving info to db, it will resend notification but in case of problems or outbox duplication
+of notification we will get duplicates and we must guarantee idempotent processing of notifications, so there will no unexpected
+duplicates, so we must have idempotent key for notifications
+- in case of ack before effect -> message at borker already deleted but effect can be not done 
+in case ack after effect -> effect can be done but message at broker have not marked as delivered and there could be new retry with duplicate
+- If ack strategy is AcknowledgeMode.MANUAL then we at consumer side must handle and correctly write channel.basicAck(...) to notify ack about
+success or failure of notification handling
+- I changed ack from NONE to AUTO so before: ack was at moment of sending message to consumer, 
+now it is at moment of consumer successfully handles message without problems and errors
+- Key of event db must be unique so we can identify event and we can have many events for one order and also we can identify 
+was event covered by notification and payout ledger or only one of them or none, so it is required to have composite key of
+consumer identity and event id, so to keys was added prefix of consumer identity
+- Kafka EOS can do only one thing according our requirements, deduplicate messages from retries of transport from producer in case of
+transport problems, so we must have idempotent key for notifications and do everything that already has been done
+- Also we should be carefull with idempotent key, and catching exceptions to find duplicates, in my case I should
+catch only DuplicateKeyException so if db throws DataIntegrityViolationException or any other exception it will show some problems with db
+But if we will catch more general exception we can silently loss some serious problems with db
+

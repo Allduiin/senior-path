@@ -11,9 +11,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.support.AmqpHeaders
 import org.springframework.amqp.support.converter.MessageConversionException
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.stereotype.Component
 import org.springframework.transaction.support.TransactionTemplate
+
+private const val PAYOUT_LEDGER_KEY = "payout-ledger"
 
 @Component
 class PayoutLedgerConsumer(
@@ -38,11 +41,11 @@ class PayoutLedgerConsumer(
     private fun processEvent(payload: String, event: PaymentCapturedEvent, messageId: String) {
         try {
             tx.execute {
-                processedEventRepository.saveAndFlush(ProcessedEvent(messageId))
+                processedEventRepository.saveAndFlush(ProcessedEvent("$PAYOUT_LEDGER_KEY:$messageId"))
                 crashPoint.maybeCrash(CrashPoint.AFTER_CLAIM_BEFORE_EFFECT, payload)
                 ledger.save(event.toPayoutEntry())
             }
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: DuplicateKeyException) {
             logger.warn("Duplicate event: $payload, message id: $messageId", e)
         }
     }
