@@ -71,8 +71,8 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 ## Open weak spots (priority top-down)
 <!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
-1. **Q7 idempotent consumption — LAPSED on first retention pass 2026-08-17 (65, q2), relearn
-   due 2026-08-19.** Three pinned misses: (a) **redelivery re-framed as "retry policy" again** —
+1. **Q7 idempotent consumption — LAPSED on first retention pass 2026-08-17 (68, q2; raised
+   65→68 on a partially-correct challenge re PSP dedup), relearn due 2026-08-19.** Three pinned misses: (a) **redelivery re-framed as "retry policy" again** —
    the recurring boundary slip; the mechanism is protocol-guaranteed requeue of unacked
    deliveries when the connection/channel dies, not a configurable retry; (b) the **check-then-act
    crash window** not reproduced when asked directly (record-key-first ⇒ silent permanent loss =
@@ -80,8 +80,9 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
    with the TOCTOU race instead; (c) **dedup TTL lower bound** answered as event processing time
    instead of the max plausible redelivery window (broker retention + DLQ replay + manual
    reprocessing). Held cold: atomic claim via PK/`ON CONFLICT`, Redis-as-second-resource trap,
-   guarded transition, record-intent-before-PSP-call. Also unnamed: sending *your* key as the
-   PSP `Idempotency-Key` header (mechanism 1); rows-affected=0 as the claim check.
+   guarded transition, record-intent-before-PSP-call, PSP-side dedup as leverageable (though framed
+   as the PSP's property, not a producer-sent `Idempotency-Key`, and query-first preferred over
+   safe resend — the design inversion to re-probe). Also unnamed: rows-affected=0 as the claim check.
 2. **Q6+Q8 broker-boundary residue (weaker form of the same gap).** Q6 passed retention
    2026-08-17 (82) with two slips: retries attributed to publisher confirms themselves (the
    confirm is a broker→publisher ack; retry-on-missing-confirm is app logic), and the
