@@ -70,6 +70,7 @@ load stays small even at 30–50 themes; the budget only bites during ramp-up or
 | Transactional outbox & dual-write | Q6 | [transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) | 2.50 | 1 | 7 | 2026-08-17 | 2026-08-24 | entered 2026-08-07 · 2026-08-17 pass 82 (q4) |
 | Idempotent consumption | Q7 | [idempotent-consumption.md](knowledge-base/phase-1-distributed-tx/idempotent-consumption.md) | 2.18 | 0 | 2 | 2026-08-17 | 2026-08-19 | entered 2026-08-10 · 2026-08-17 **lapse** 68 (q2) |
 | Delivery semantics & effectively-once | Q8 | [delivery-semantics.md](knowledge-base/phase-1-distributed-tx/delivery-semantics.md) | 2.50 | 0 | 7 | — (taught 2026-08-13) | 2026-08-20 | entered 2026-08-13 |
+| Isolation levels & MVCC | Q2 | [isolation-levels-and-mvcc.md](knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md) | 2.50 | 0 | 7 | — (re-taught 2026-08-17) | 2026-08-24 | entered 2026-08-17 (fresh re-teach; pilot note carried) |
 
 > Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
 > first successful review).

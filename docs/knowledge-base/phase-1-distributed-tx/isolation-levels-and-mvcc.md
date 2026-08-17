@@ -1,6 +1,6 @@
 # Isolation levels, MVCC & the lost update
 
-**Maps to:** Q2 (isolation levels & MVCC; optimistic vs pessimistic locking) · **Phase 1** · Exercise: `p1-02` (lost-update, to be re-scaffolded)
+**Maps to:** Q2 (isolation levels & MVCC; optimistic vs pessimistic locking) · **Phase 1** · Exercise: [p1-02-lost-update](../../../exercises/p1-02-lost-update/SPEC.md) (RED) · Re-taught 2026-08-17
 [← back to index](../README.md) · Related: [[spring-proxy-and-transactions]]
 
 ## TL;DR
@@ -72,6 +72,25 @@ A write in MVCC reads the **latest committed row version under a row lock** — 
 > (serialize). Neither makes a blind app-level RMW safe — that needs an atomic write, a row lock
 > taken *before* the window, or a version check. PG `SERIALIZABLE` = **SSI** (predicate/SIRead
 > locks) and is the only level that also stops **write skew**.
+
+## SSI — how PG SERIALIZABLE actually works (added 2026-08-17)
+**Not locking.** PG `SERIALIZABLE` = **Serializable Snapshot Isolation**: transactions run
+exactly like snapshot isolation (no extra blocking), while the engine tracks
+**rw-antidependencies** — "T1 *read* something T2 later *wrote*" — via **SIRead locks**
+(non-blocking bookkeeping markers on rows/pages/predicates, not real locks).
+
+| Piece | Mechanism |
+|---|---|
+| Detection target | the **dangerous structure**: two consecutive rw-edges `T1 ─rw→ T2 ─rw→ T3` — the only shape a snapshot-isolation anomaly cycle can take |
+| On detection | **abort one tx with `40001`** (`serialization_failure`) — abort, never block |
+| Cost | reads leave SIRead markers; **false positives exist** (page-level granularity, structure ≠ guaranteed cycle) — safe but occasionally aborts a serializable history |
+| App contract | same as PG RR write-write: **retry loop is mandatory** at SERIALIZABLE |
+
+**Why it stops write skew when nothing else does:** in write skew each tx *reads* the rows the
+other *writes* (check invariant → write own row), so there is **no write-write conflict** for
+first-updater-wins to catch — but there ARE two rw-edges forming a cycle, which is exactly what
+SSI detects. Payments shape: two txs each check `SUM(holds) ≤ limit` then INSERT their own hold —
+per-row correct, invariant broken at SI/RR; aborted at SSI.
 
 ## The three fixes (p1-02)
 | Fix | Mechanism | Lock in window | Stops it because | Default when |

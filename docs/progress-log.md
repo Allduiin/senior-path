@@ -52,6 +52,7 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 <!-- viz:tasks -->
 | Date | What | Artifact / module |
 |---|---|---|
+| 2026-08-17 | **Q2 re-taught + KB note extended** (`/learn-theme Q2`, stage 1–2): targeted teach on the three baseline gaps — snapshot-read vs **current-read-under-row-lock** (landed on the user's own Q7 guarded-transition UPDATE), optimistic `@Version` as a row-level CAS with mandatory bounded retry of the whole RMW, **SSI as rw-antidependency cycle detection** (SIRead markers, dangerous structure, abort `40001`, false positives, write-skew example) — SSI section added to the KB note. Q2 entered spaced review (due 2026-08-24). Stage 3 already done (p1-02 RED since 2026-07-07); handed off at stage 4 | [knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md](knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md) |
 | 2026-08-17 | **First spaced-review pass on the arc** (`/repeat-knowledge`, RU): Q6 **pass 82** (q4, reps 1, next 2026-08-24) — cursor-skip interleaving reconstructed flawlessly; slips: retries attributed to publisher confirms, re-scan mitigation not named. Q7 **lapse 68** (q2, EF→2.18, relearn 2026-08-19) — redelivery re-framed as retry-policy (recurring), crash-window asymmetry not reproduced, TTL bound answered as pipeline time not replay window. Grade challenged 65→68 (PSP dedup named cold, conditional framing). Post-quiz discussion productive: user correctly pinned the Idempotency-Key limit (delegated contractual guarantee, not physical — why reconciliation is always mandatory) | `docs/spaced-review.md` review log |
 | 2026-07-07 | **Lab overhauled + fresh start.** One-owner-per-fact doc rule; Analysis gate; multi-theme arcs & phase capstones defined; Q13+ convention; reading log added; skills updated; p1-01 & p1-02 reverted to RED scaffolds for re-issue; pilot run (2026-06-14→17) archived in git history | whole repo |
 | 2026-07-28 | **Fresh baseline diagnostic** (Q1–Q12 cold via `/assess`). Mean ≈ 31; pillar levels recalibrated; Phase 1 opened. `/assess` calibration rules validated (sketch → v1, single-cell cap added) | docs + `/assess` skill |
@@ -118,9 +119,10 @@ these three. Immediate queue, by date:
   recompute the Distributed pillar; **re-score the Q7 cell** (map still says 82; retention lapse
   2026-08-17 says the consumer-side crash-window articulation didn't hold cold) and probe the
   broker-boundary gap with a fresh question rather than a repeat.
-- **What's next in Phase 1:** roadmap topics still untouched here — **saga (orchestration vs
-  choreography)** and the **Q1/Q2 re-teach** (Spring proxy propagation 50, isolation/MVCC 55),
-  both still at baseline. p1-01 and p1-02 stay RED in the queue and target exactly these.
+- **Q2 in flight (stage 4):** re-taught 2026-08-17, p1-02 handed off — user solves
+  `./gradlew :p1-02-lost-update:test` to GREEN + Analysis; then `/learn-theme Q2` resumes at
+  stage 5 (review). Remaining in Phase 1 after that: **Q1 re-teach** (p1-01 RED) and **saga**
+  (untaught, no cell yet), then the phase capstone.
 Note (2026-08-16): the broker-boundary sub-gap (weak-spot #1) was answered cold and correctly in
 the Q8 review quiz — one residual precision slip only (publisher-confirm direction: named
 publisher→broker, the confirm travels broker→publisher). Retention should confirm it holds
