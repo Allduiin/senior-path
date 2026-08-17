@@ -67,8 +67,8 @@ load stays small even at 30–50 themes; the budget only bites during ramp-up or
 <!-- viz:ledger -->
 | Theme | Q | KB note | EF | reps | interval (d) | Last reviewed | Next due | History |
 |---|:--:|---|:--:|:--:|:--:|:--:|:--:|---|
-| Transactional outbox & dual-write | Q6 | [transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) | 2.50 | 0 | 7 | — (taught 2026-08-07) | 2026-08-14 | entered 2026-08-07 |
-| Idempotent consumption | Q7 | [idempotent-consumption.md](knowledge-base/phase-1-distributed-tx/idempotent-consumption.md) | 2.50 | 0 | 7 | — (taught 2026-08-10) | 2026-08-17 | entered 2026-08-10 |
+| Transactional outbox & dual-write | Q6 | [transactional-outbox.md](knowledge-base/phase-1-distributed-tx/transactional-outbox.md) | 2.50 | 1 | 7 | 2026-08-17 | 2026-08-24 | entered 2026-08-07 · 2026-08-17 pass 82 (q4) |
+| Idempotent consumption | Q7 | [idempotent-consumption.md](knowledge-base/phase-1-distributed-tx/idempotent-consumption.md) | 2.18 | 0 | 2 | 2026-08-17 | 2026-08-19 | entered 2026-08-10 · 2026-08-17 **lapse** 65 (q2) |
 | Delivery semantics & effectively-once | Q8 | [delivery-semantics.md](knowledge-base/phase-1-distributed-tx/delivery-semantics.md) | 2.50 | 0 | 7 | — (taught 2026-08-13) | 2026-08-20 | entered 2026-08-13 |
 
 > Add a row when a new theme gets a KB note (enters at EF 2.50, reps 0, due in 7 d after its
@@ -84,3 +84,5 @@ it lands. Until then, open a session every several days to stay on the curve.
 <!-- viz:review-log -->
 | Date | Themes reviewed | Grade → q | EF/interval change |
 |---|---|---|---|
+| 2026-08-17 | Q6 Transactional outbox | 82 → q4 (pass) | EF 2.50→2.50, reps 0→1, interval 7 d → due 2026-08-24. Misses: retries attributed to publisher confirms (confirm = broker→publisher ack; retry is app logic), `published_at IS NULL` re-scan mitigation not named explicitly |
+| 2026-08-17 | Q7 Idempotent consumption | 65 → q2 (**lapse**) | EF 2.50→2.18, reps→0, interval 2 d → due 2026-08-19. Misses: redelivery re-framed as retry-policy (recurring — it's protocol requeue of unacked deliveries on connection death); crash-window ordering (record-first ⇒ silent loss = worse) not reproduced when asked directly; TTL lower bound answered as processing time instead of max redelivery window (broker retention + DLQ replay + manual reprocessing). Held: atomic claim via PK/ON CONFLICT, Redis-as-second-resource trap, guarded transition, record-intent-before-PSP-call |

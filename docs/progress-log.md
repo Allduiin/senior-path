@@ -71,44 +71,50 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 ## Open weak spots (priority top-down)
 <!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
-1. **Q6+Q7+Q8 cluster (the Phase 1 arc) — arc complete 2026-08-16, all three cells 70–82,
-   none yet held across two re-tests.** Q6 70, Q7 82, Q8 78. One persistent cross-cutting
-   sub-gap survives all three stages and is the thing to probe on every future retention pass:
-   **the producer↔broker / consumer↔broker boundary.** Recurs as: publisher-confirms conflated
-   with the whole publish leg (Q6); the consumer-side commit→ack window answered with the relay's
-   publish→mark-sent window (Q7, ≥3 times); "producer retries" / "MANUAL ack at producer" in the
-   Q8 write-up. Root cause looks like one blurred mental model of *who talks to the broker on
-   which leg*, not three separate slips. Other residuals: redelivery read as retry-policy rather
-   than protocol-guaranteed requeue of unacked deliveries (Q7); Kafka EOS scope overreach,
-   corrected (Q8); sequence≠commit-order max-id-cursor skip (Q6).
-2. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
+1. **Q7 idempotent consumption — LAPSED on first retention pass 2026-08-17 (65, q2), relearn
+   due 2026-08-19.** Three pinned misses: (a) **redelivery re-framed as "retry policy" again** —
+   the recurring boundary slip; the mechanism is protocol-guaranteed requeue of unacked
+   deliveries when the connection/channel dies, not a configurable retry; (b) the **check-then-act
+   crash window** not reproduced when asked directly (record-key-first ⇒ silent permanent loss =
+   strictly worse than effect-first ⇒ duplicate; fix = claim + effect in ONE local tx) — answered
+   with the TOCTOU race instead; (c) **dedup TTL lower bound** answered as event processing time
+   instead of the max plausible redelivery window (broker retention + DLQ replay + manual
+   reprocessing). Held cold: atomic claim via PK/`ON CONFLICT`, Redis-as-second-resource trap,
+   guarded transition, record-intent-before-PSP-call. Also unnamed: sending *your* key as the
+   PSP `Idempotency-Key` header (mechanism 1); rows-affected=0 as the claim check.
+2. **Q6+Q8 broker-boundary residue (weaker form of the same gap).** Q6 passed retention
+   2026-08-17 (82) with two slips: retries attributed to publisher confirms themselves (the
+   confirm is a broker→publisher ack; retry-on-missing-confirm is app logic), and the
+   `published_at IS NULL` re-scan mitigation not named explicitly (interleaving itself was
+   reconstructed perfectly). Q8 retention due 2026-08-20, untested since review.
+3. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
    resource isolation; retry hazards in payments.
-3. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
+4. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
    `supervisorScope` + per-child handling, cooperative cancellation & `CancellationException`.
-4. Virtual threads (Q5): carrier/mount/unmount mechanism; pinning (`synchronized`, JNI) +
+5. Virtual threads (Q5): carrier/mount/unmount mechanism; pinning (`synchronized`, JNI) +
    carrier-pool starvation; `ReentrantLock` fix, JEP 491.
-5. Payment design mechanisms (Q9): idempotency-key insert-*before*-PSP-call; explicit
+6. Payment design mechanisms (Q9): idempotency-key insert-*before*-PSP-call; explicit
    PENDING-unknown state + webhook/poll reconciliation pair; guarded state transitions.
-6. Tail latency (Q11): GC-pause & pool-exhaustion cause families; retry-masked timeouts;
+7. Tail latency (Q11): GC-pause & pool-exhaustion cause families; retry-masked timeouts;
    traces→metrics→logs localization order.
-7. N+1 (Q3): batch fetching (`@BatchSize`) absent; EAGER ≠ join for JPQL; HHH000104
+8. N+1 (Q3): batch fetching (`@BatchSize`) absent; EAGER ≠ join for JPQL; HHH000104
    in-memory pagination + two-query workaround; lazy trigger is per-collection.
-8. Spring tx (Q1): `rollbackOnly`/`UnexpectedRollbackException`; `TransactionTemplate` as
+9. Spring tx (Q1): `rollbackOnly`/`UnexpectedRollbackException`; `TransactionTemplate` as
    third fix; checked exceptions don't roll back by default.
-9. Isolation/MVCC (Q2): atomic `UPDATE ... SET x = x - n` as fix #0; optimistic `@Version`
-   missing from repertoire; SSI = dependency-cycle detection, not table locking.
-10. equals/hashCode (Q12): orphaned-entry + re-put duplication mechanics; immutable-key
+10. Isolation/MVCC (Q2): atomic `UPDATE ... SET x = x - n` as fix #0; optimistic `@Version`
+    missing from repertoire; SSI = dependency-cycle detection, not table locking.
+11. equals/hashCode (Q12): orphaned-entry + re-put duplication mechanics; immutable-key
     design rules for review.
 
 ## Next session focus
 **Phase-1 arc Q6+Q7+Q8 is complete** (p1-03 all three stages REVIEWED). Retention now carries
-these three; no new arc exercise needed. Immediate queue, by date:
-- **Q6 retention overdue 2026-08-14** and **Q7 due 2026-08-17** (`/repeat-knowledge`) — one
-  combined pass makes sense. Probe the cross-cutting **producer↔broker / consumer↔broker**
-  sub-gap (weak-spot #1) hardest: who redelivers, who acks, on which leg. Also Q6 max-id-cursor
-  skip. Q8 retention due 2026-08-20.
+these three. Immediate queue, by date:
+- **Q7 relearn due 2026-08-19** (`/repeat-knowledge`) — lapsed 2026-08-17 (65). Re-quiz exactly
+  the three pinned misses in weak-spot #1: protocol requeue vs retry-policy, the check-then-act
+  crash-window asymmetry, dedup TTL lower bound. Q8 retention due 2026-08-20; Q6 next 2026-08-24.
 - **Deep re-assessment due 2026-08-18** (`/assess`) — first `/assess` since the fresh baseline;
-  recompute the Distributed pillar now that Q6/Q7/Q8 are scored (70/82/78), and probe the
+  recompute the Distributed pillar; **re-score the Q7 cell** (map still says 82; retention lapse
+  2026-08-17 says the consumer-side crash-window articulation didn't hold cold) and probe the
   broker-boundary gap with a fresh question rather than a repeat.
 - **What's next in Phase 1:** roadmap topics still untouched here — **saga (orchestration vs
   choreography)** and the **Q1/Q2 re-teach** (Spring proxy propagation 50, isolation/MVCC 55),
