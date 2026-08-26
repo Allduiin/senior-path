@@ -53,11 +53,32 @@ every few days unless you actually forget it.
   what's due (and how many) and offers to run `/repeat-knowledge`.
 - Run **`/repeat-knowledge`** (or say "review") any time to quiz due themes now.
 
-### Session budget (scales to many themes)
-A run reviews at most **8 themes** (≈15 min); the rest stay due and carry to the next run.
-Priority: lapsed / lowest-EF → most overdue → soonest due. Override with `/repeat-knowledge N`
-or `/repeat-knowledge all`. Because SM-2 spreads `next_due` out as themes mature, steady-state
-load stays small even at 30–50 themes; the budget only bites during ramp-up or after a gap.
+### Session budget (revised 2026-08-26 — counted in questions, not themes)
+A run asks at most **10 questions**. Each theme contributes **3–5** (its own count, set by how
+fragile it is), so a run holds **2–3 themes**. This replaces the old 8-theme cap, which allowed a
+40-question run — the 2026-08-26 session ran ~1 h on two themes and was cut short, which is the
+evidence behind the change.
+
+**Whole themes only — never split a theme across runs.** Pack in priority order, adding each
+theme *entire* while the running total stays ≤ 10; when the next theme would push past 10, stop.
+The remainder carries to a **follow-up run the next day**, not to "whenever".
+
+> **Worked example.** Four themes due, needing 5 + 4 + 3 + 4 questions (16 total).
+> Run 1 = **5 + 4 = 9** — adding the 3 would make 12, over the cap, so it stops at two themes.
+> Run 2 (next day) = **3 + 4 = 7**. Never 5 + 4 + 1 / 2 + 3 + 4.
+
+**Priority** for the packing order: ① lapsed / lowest-EF first (most at-risk) → ② most overdue
+(largest `today − next_due`) → ③ soonest due.
+
+**Overrides:** `/repeat-knowledge N` reviews up to N **themes**, ignoring the question cap;
+`/repeat-knowledge all` clears the whole backlog in one run. Both are the user's call — the
+skill never widens the budget on its own.
+
+**Carry-over:** themes beyond the budget are NOT touched — they keep their `next_due` (so they
+stay due/overdue) and lead the follow-up run. The run's closing report names the follow-up date.
+
+Because SM-2 spreads `next_due` out as themes mature, steady-state load stays inside one run even
+at 30–50 themes; the cap only bites during ramp-up or after a gap in sessions.
 
 ## Ledger
 > **Fresh start 2026-07-07** — ledger reset (pilot rows archived in git history). Themes re-enter
