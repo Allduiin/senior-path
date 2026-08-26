@@ -52,6 +52,7 @@ the numbers. Status: **operative baseline recorded 2026-07-28**; pilot kept ther
 <!-- viz:tasks -->
 | Date | What | Artifact / module |
 |---|---|---|
+| 2026-08-26 | **Spaced review after a 9-day gap** (`/repeat-knowledge`, RU) — all 4 ledger themes were due; session closed by the user after ~1 h on two. Q7 **pass 77** (q3, EF→2.04, reps 1, next 2026-09-02) — off the lapse: crash-window asymmetry reproduced cold on a code-review framing, TTL floor re-derived, and the PSP producer-sent `Idempotency-Key` named as the first-call prerequisite (the 08-17 design inversion, closed). Q8 **pass 70** (q3, at the floor, EF→2.36, reps 1, next 2026-09-02) — first recall since the teach; Kafka EOS answer was the session's best (`InitProducerId` PID recovery + epoch fencing, unprompted), but the perfect-network process-death window was missed. **Q6 carried** (still due). **Q2 parked** — user reports the theme is not yet learned and `p1-02` is untouched, so a retention quiz would measure the teach rather than recall. Deliberate grading note: retention grades were **not** written into the knowledge-map `Latest` column — that instrument is `/assess`-owned and is overdue; today's numbers are logged as evidence for it | `docs/spaced-review.md` review log |
 | 2026-08-17 | **Q2 re-taught + KB note extended** (`/learn-theme Q2`, stage 1–2): targeted teach on the three baseline gaps — snapshot-read vs **current-read-under-row-lock** (landed on the user's own Q7 guarded-transition UPDATE), optimistic `@Version` as a row-level CAS with mandatory bounded retry of the whole RMW, **SSI as rw-antidependency cycle detection** (SIRead markers, dangerous structure, abort `40001`, false positives, write-skew example) — SSI section added to the KB note. Q2 entered spaced review (due 2026-08-24). Stage 3 already done (p1-02 RED since 2026-07-07); handed off at stage 4 | [knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md](knowledge-base/phase-1-distributed-tx/isolation-levels-and-mvcc.md) |
 | 2026-08-17 | **First spaced-review pass on the arc** (`/repeat-knowledge`, RU): Q6 **pass 82** (q4, reps 1, next 2026-08-24) — cursor-skip interleaving reconstructed flawlessly; slips: retries attributed to publisher confirms, re-scan mitigation not named. Q7 **lapse 68** (q2, EF→2.18, relearn 2026-08-19) — redelivery re-framed as retry-policy (recurring), crash-window asymmetry not reproduced, TTL bound answered as pipeline time not replay window. Grade challenged 65→68 (PSP dedup named cold, conditional framing). Post-quiz discussion productive: user correctly pinned the Idempotency-Key limit (delegated contractual guarantee, not physical — why reconciliation is always mandatory) | `docs/spaced-review.md` review log |
 | 2026-07-07 | **Lab overhauled + fresh start.** One-owner-per-fact doc rule; Analysis gate; multi-theme arcs & phase capstones defined; Q13+ convention; reading log added; skills updated; p1-01 & p1-02 reverted to RED scaffolds for re-issue; pilot run (2026-06-14→17) archived in git history | whole repo |
@@ -73,23 +74,32 @@ per-date in Completed tasks; scores in `knowledge-map.md`.
 ## Open weak spots (priority top-down)
 <!-- viz:weak-spots -->
 Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge-map.md`.
-1. **Q7 idempotent consumption — LAPSED on first retention pass 2026-08-17 (68, q2; raised
-   65→68 on a partially-correct challenge re PSP dedup), relearn due 2026-08-19.** Three pinned misses: (a) **redelivery re-framed as "retry policy" again** —
-   the recurring boundary slip; the mechanism is protocol-guaranteed requeue of unacked
-   deliveries when the connection/channel dies, not a configurable retry; (b) the **check-then-act
-   crash window** not reproduced when asked directly (record-key-first ⇒ silent permanent loss =
-   strictly worse than effect-first ⇒ duplicate; fix = claim + effect in ONE local tx) — answered
-   with the TOCTOU race instead; (c) **dedup TTL lower bound** answered as event processing time
-   instead of the max plausible redelivery window (broker retention + DLQ replay + manual
-   reprocessing). Held cold: atomic claim via PK/`ON CONFLICT`, Redis-as-second-resource trap,
-   guarded transition, record-intent-before-PSP-call, PSP-side dedup as leverageable (though framed
-   as the PSP's property, not a producer-sent `Idempotency-Key`, and query-first preferred over
-   safe resend — the design inversion to re-probe). Also unnamed: rows-affected=0 as the claim check.
-2. **Q6+Q8 broker-boundary residue (weaker form of the same gap).** Q6 passed retention
-   2026-08-17 (82) with two slips: retries attributed to publisher confirms themselves (the
-   confirm is a broker→publisher ack; retry-on-missing-confirm is app logic), and the
-   `published_at IS NULL` re-scan mitigation not named explicitly (interleaving itself was
-   reconstructed perfectly). Q8 retention due 2026-08-20, untested since review.
+1. **"Requeue" spoken as "retry" — the one recurring gap, now confirmed cross-theme (Q7 + Q8),
+   third session running (2026-08-11, 08-17, 08-26).** Everything else about the broker boundary
+   is held; this is a vocabulary-and-actor slip that keeps regenerating the wrong mental model.
+   Two mechanisms must stay separate: **handler throws** ⇒ container `nack`/`reject`s ⇒ requeue or
+   DLQ, governed by config (`defaultRequeueRejected`, retry interceptor) — *this* one is policy;
+   **channel/connection dies** ⇒ the broker requeues **every unacked delivery** on that channel,
+   unilaterally, AMQP-mandated, no backoff and no attempt counter — *this* one is a protocol
+   invariant. On 2026-08-26 the redelivery was tied to "no success / no exception" when the premise
+   was a dead connection, where the ack can never arrive however the method ends. Related, same
+   family: under `AUTO` it is the **container** that acks after the listener returns — the broker
+   does not "wait for processing". Probe by forcing a scenario where the handler *succeeds* and a
+   redelivery still happens.
+2. **Q8 residue (pass at the 70 floor, 2026-08-26).** (a) **The perfect-network window** — with
+   loss ruled out, process death between applying the effect and sending the ack still leaves the
+   gap; it relocates from the wire into one machine. Answered by assuming away process failure too
+   (vacuous), then reintroducing network drops. The paired reframe also unstated: exactly-once
+   *effect* is achievable because the effect lives in storage you control, delivery is a property
+   of a wire you don't. (b) **Publisher-confirm direction still unanswered** — flagged as the lone
+   residual slip on 08-16, skipped on 08-26; the confirm travels broker→publisher, mirror of the
+   consumer→broker ack. (c) The confirm's producer-side blind spot named as the confirm-lost
+   variant rather than the publish that **never started**. Strengths to not re-probe: Kafka EOS
+   (answered beyond the note — `InitProducerId` PID recovery, epoch fencing), NONE-vs-AUTO mapping,
+   the claim signal and the flush/rollback-only hazard of the exception-based variant.
+   Q7 residue: dedup-TTL contributors named were the small ones (outbox retention, queue latency)
+   — **DLQ replay and manual reprocessing** are what actually set the number, i.e. weeks not hours.
+   Q6 untested since 08-17 (still due): confirm the two known slips closed.
 3. Resilience patterns (Q10): circuit-breaker state machine + half-open recovery; bulkhead as
    resource isolation; retry hazards in payments.
 4. Coroutines (Q4): structured concurrency (parent Job, sibling cancellation),
@@ -110,23 +120,31 @@ Reordered from the **2026-07-28 baseline**. Gaps only; scores live in `knowledge
     design rules for review.
 
 ## Next session focus
-**Phase-1 arc Q6+Q7+Q8 is complete** (p1-03 all three stages REVIEWED). Retention now carries
-these three. Immediate queue, by date:
-- **Q7 relearn due 2026-08-19** (`/repeat-knowledge`) — lapsed 2026-08-17 (65). Re-quiz exactly
-  the three pinned misses in weak-spot #1: protocol requeue vs retry-policy, the check-then-act
-  crash-window asymmetry, dedup TTL lower bound. Q8 retention due 2026-08-20; Q6 next 2026-08-24.
-- **Deep re-assessment due 2026-08-18** (`/assess`) — first `/assess` since the fresh baseline;
-  recompute the Distributed pillar; **re-score the Q7 cell** (map still says 82; retention lapse
-  2026-08-17 says the consumer-side crash-window articulation didn't hold cold) and probe the
-  broker-boundary gap with a fresh question rather than a repeat.
-- **Q2 in flight (stage 4):** re-taught 2026-08-17, p1-02 handed off — user solves
-  `./gradlew :p1-02-lost-update:test` to GREEN + Analysis; then `/learn-theme Q2` resumes at
-  stage 5 (review). Remaining in Phase 1 after that: **Q1 re-teach** (p1-01 RED) and **saga**
-  (untaught, no cell yet), then the phase capstone.
-Note (2026-08-16): the broker-boundary sub-gap (weak-spot #1) was answered cold and correctly in
-the Q8 review quiz — one residual precision slip only (publisher-confirm direction: named
-publisher→broker, the confirm travels broker→publisher). Retention should confirm it holds
-rather than assume it closed.
+**Phase-1 arc Q6+Q7+Q8 is complete** (p1-03 all three stages REVIEWED) and both arc themes now
+carry a retention pass (Q7 77, Q8 70 — 2026-08-26). Queue, in priority order:
+- **`/assess` is the overdue item — due 2026-08-18, now 8 days past.** First `/assess` since the
+  fresh baseline. Recompute the Distributed pillar; **re-score the Q7 and Q8 cells** — the map
+  still reads 82 / 84 from stage-5 review work, while cold retention reads 77 / 70. Those numbers
+  were deliberately left alone on 08-26 (the map's `Latest` column is `/assess`-owned; mixing
+  instruments is the drift the one-owner rule exists to prevent), so reconciling them is this
+  assessment's job. Probe the weak-spot #1 boundary with a **fresh** scenario, not a repeat: force
+  a case where the handler succeeds and a redelivery still happens.
+- **Retention:** **Q6 is due now** (next_due 2026-08-24, carried unreviewed from 08-26) and leads
+  the next `/repeat-knowledge`. Q7 + Q8 next due 2026-09-02.
+- **Q2 is NOT learned — user said so explicitly on 2026-08-26**, and `p1-02` is untouched
+  (`WalletService.withdraw` still the naive RMW with `TODO(task 2)`, SPEC Analysis empty). Its
+  ledger row is **parked** accordingly. This is the real Phase-1 blocker: `/learn-theme Q2` sits at
+  stage 4, which is the user's to do — solve `./gradlew :p1-02-lost-update:test` to GREEN (pick one
+  of optimistic `@Version` + bounded retry / pessimistic `FOR UPDATE` / atomic `UPDATE … SET
+  balance = balance - :amount`) and write the Analysis. Consider a short re-teach first, since the
+  08-17 teach evidently didn't land. Then stage 5 review, and only then does Q2 enter retention.
+- Remaining in Phase 1 after Q2: **Q1 re-teach** (p1-01 RED) and **saga** (untaught, no cell yet),
+  then the phase capstone.
+Pacing signal (2026-08-26): the user spent ~1 h on two themes and stopped, asking for shorter
+answers and offering to take follow-up questions instead of writing everything out. Retention runs
+should be capped at **2 themes / ~25 min** unless he asks for more, and questions should target one
+mechanism each rather than inviting an essay. The 9-day gap is what put four themes in the queue
+at once — shorter, more frequent sessions beat long catch-ups.
 Deferred code follow-ups on p1-03 (fold into a retention pass, not a new exercise): dedup-table
 retention (`createdAt` + cleanup, bounded below by the relay's unbounded republication) is still
 unimplemented in both consumers.
